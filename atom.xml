@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://HappyLeslieAlexander.github.io</id>
+    <title>Leslie Alexander的博客</title>
+    <updated>2024-03-16T13:17:09.720Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://HappyLeslieAlexander.github.io"/>
+    <link rel="self" href="https://HappyLeslieAlexander.github.io/atom.xml"/>
+    <subtitle>茶要泡开才好喝，人要想开才好过.</subtitle>
+    <logo>https://HappyLeslieAlexander.github.io/images/avatar.png</logo>
+    <icon>https://HappyLeslieAlexander.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2024, Leslie Alexander的博客</rights>
+</feed>
