@@ -1,0 +1,402 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>洋葱路由（Tor）的高级用法 | Leslie Alexander的博客</title>
+<link rel="stylesheet" href="https://HappyLeslieAlexander.github.io/styles/main.css">
+<script src="https://HappyLeslieAlexander.github.io/media/script.js"></script>
+
+    
+
+  <meta name="description" content="前言
+Tor 浏览器（Tor Browser）本质上是Firefox ESR + Tor，浏览器的所有流量都会通过Tor网络传输，那么，我们可不可以把Tor作为代理或者VPN使用呢？
+在Android和iOS上有一款叫Orbot的App，可...">
+  <script src="https://HappyLeslieAlexander.github.io/media/prism.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+  <div class="antialiased">
+    <div class="max-w-5xl mx-auto px-6 md:px-8">
+      <div class="flex justify-between items-center mt-10">
+  <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-900 font-medium md:font-normal leading-none">
+    <a href="https://HappyLeslieAlexander.github.io">Leslie Alexander的博客</a>
+  </h1>
+  <div class="block lg:hidden" id="thumb-menu">
+    <button id="thumb-open" type="button" class="block">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6H22V7H2V6ZM2 12H22V13H2V12ZM22 18H2V19H22V18Z" class="fill-current text-gray-900"></path></svg>
+    </button>
+    <button id="thumb-close" type="button" class="hidden">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4L20 20M20 4L4 20" class="" stroke="#1A202C"></path></svg>
+    </button>
+  </div>
+</div>
+<div id="nav-list" class="lg:block hidden">
+  <div class="w-full block lg:flex lg:justify-between lg:border-b lg:border-gray-400 mt-10 text-gray-700 font-medium lg:text-lg">
+    <div class="lg:flex -mb-px">
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io" class="nav-link">首页</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/aboutme" class="nav-link">关于</a>
+        
+      
+        
+          <a href="https://github.com/HappyLeslieAlexander" class="nav-link" target="_blank">GitHub</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/tags" class="nav-link">标签</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/archives" class="nav-link">归档</a>
+        
+      
+        
+          <a href="https://t.me/Depressed_LeslieAlexander" class="nav-link" target="_blank">Telegram</a>
+        
+      
+        
+          <a href="https://t.me/s/LeslieDiary" class="nav-link" target="_blank">Telegram 频道</a>
+        
+      
+        
+          <a href="https://t.me/LeslieGroup" class="nav-link" target="_blank">Telegram 群组</a>
+        
+      
+        
+          <a href="https://leslie-links.vercel.app/" class="nav-link" target="_blank">友情链接</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/donate" class="nav-link">捐赠</a>
+        
+      
+    </div>
+    <div class="lg:flex">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+      <a href="https://HappyLeslieAlexander.github.io/atom.xml" class="block mt-6 lg:mt-0 lg:ml-8 flex align-center hover:text-gray-900" target="_blank">
+        <div>RSS</div>
+        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="ml-1 -mt-px"><path d="M16.5 13V18.5H6.5V8.5H12" stroke="#4A5568"></path> <path d="M10 15L18.5 6.5" stroke="#4A5568"></path> <path d="M14 6.5H18.5V11" stroke="#4A5568"></path></svg>
+      </a>
+    </div>
+  </div>
+</div>
+      <div class="mb-20 md:flex mt-10 lg:mt-6 md:border-t md:border-gray-400 md:pt-2 lg:border-t-0 lg:pt-0">
+        <div class="w-full md:w-2/3 mt-6">
+          <h1 class="text-4xl">洋葱路由（Tor）的高级用法</h1>
+          
+            <img class="max-w-full mt-6 rounded-sm" src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20Proxy.png" alt="">
+          
+          <div class="mt-6 lg:mt-10 post-content">
+            <h2 id="前言">前言</h2>
+<p>Tor 浏览器（Tor Browser）本质上是Firefox ESR + Tor，浏览器的所有流量都会通过Tor网络传输，那么，我们可不可以把Tor作为代理或者VPN使用呢？</p>
+<p>在Android和iOS上有一款叫Orbot的App，可以将Tor作为VPN使用，那么在PC端应该怎么操作呢？这期就来讲一下在Windows端上的操作。</p>
+<h2 id="tor-browser作为代理">Tor Browser作为代理</h2>
+<p>在Tor Browser中配置好网桥，连接上Tor网络，不要关闭。</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20Browser.png" alt="" loading="lazy"></figure>
+<p>此时Tor Browser会在本地开放SOCKS 9150端口，使用V2RayN等代理软件，配置SOCKS代理：<br>
+地址为127.0.0.1 端口为 9150 用户名和密码认证留空。<br>
+我使用NekoRay作为演示：</p>
+<figure data-type="image" tabindex="2"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20Browser%20Proxy.png" alt="" loading="lazy"></figure>
+<p>配置如上图所示，选中连接<br>
+打开Chrome，进入 https://check.torproject.org/ 检查连接，发现已经可以使用Tor来翻墙了。</p>
+<figure data-type="image" tabindex="3"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20Check.png" alt="" loading="lazy"></figure>
+<p>** 以上这种方法适合绝大多数人，如果你不会命令，那么你不用继续往下读了 **</p>
+<h2 id="使用裸tortor专家包">使用裸Tor（Tor专家包）</h2>
+<p>前往 https://www.torproject.org/download/tor/ 下载适合你系统版本的Tor专家包，解压出来，将data目录下的 geoip 和 geoip6 两个文件移动到tor目录下，此时这些文件应该在一起。</p>
+<figure data-type="image" tabindex="4"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20Files.png" alt="" loading="lazy"></figure>
+<p>接着创建一个名为 torrc 的文件，用记事本打开，输入以下内容：</p>
+<pre><code>#下面是跨机共享代理，去掉前面#号即可开启
+#SocksPort 0.0.0.0:9050
+
+#下面是前置代理，去掉前面#号即可开启
+#HTTPSProxy TARGET:PORT
+#HTTPSProxyAuthenticator USER:PASSOWRD
+#Socks5Proxy TARGET:PORT
+#Socks5ProxyUsername USERNAME
+#Socks5ProxyPassword PASSWORD
+
+#下面数字改为0，关闭自带网桥连接，开启前置代理
+UseBridges 1    
+
+#指定GeoIP文件路径
+DataDirectory ./
+GeoIPFile ./geoip
+GeoIPv6File ./geoip6
+
+#下面日志路径，打开后终端不会显示连接日志
+#Log notice file ./Data/tor.log 
+#StrictNodes 1
+
+#启用减少磁盘读写
+AvoidDiskWrites 1
+
+#下面是排除邪恶国家节点，去掉前面#号即可开启
+#ExcludeExitNodes {cn},{hk},{mo},{sg},{th},{pk},{by},{ru},{ir},{vn},{ph},{my},{cu}
+#ExcludeNodes {cn},{hk},{mo},{sg},{th},{pk},{by},{ru},{ir},{vn},{ph},{my},{cu}
+
+#下面是指定不同网桥使用哪些程序运行
+ClientTransportPlugin obfs4 exec ./pluggable_transports/lyrebird.exe managed
+ClientTransportPlugin snowflake exec ./pluggable_transports/snowflake-client.exe managed
+ClientTransportPlugin Conjure exec ./pluggable_transports/conjure-client.exe managed
+ClientTransportPlugin webtunnel exec ./pluggable_transports/webtunnel-client.exe managed
+
+#下面填获取到的网桥，以obfs4/snowflake/webtunnel/conjure开头的，前面必须加上Bridge
+Bridge obfs4 XXXX.XXXX.XXXX:XXXXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX iat-mode=0
+
+#tor默认的重建链路的时间是30s，可以适当延长时间保证速度
+NewCircuitPeriod 30
+
+## 更多配置信息可以在 https://2019.www.torproject.org/docs/tor-manual.html.en 获取到
+</code></pre>
+<p>保存，接着新建一个名为 Start.bat 的文件，输入以下内容：</p>
+<pre><code>@echo off
+tor.exe -f torrc
+</code></pre>
+<p>保存，运行，接着会弹出一个命令提示符窗口，第一次连接会比较慢，稍作等待。</p>
+<figure data-type="image" tabindex="5"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20In%20Terminal.png" alt="" loading="lazy"></figure>
+<p>等到出现 100% Done 字样说明连接成功，然后你就可以在代理工具中配置代理了。<br>
+此时Tor Browser会在本地开放SOCKS 9050端口，使用V2RayN等代理软件，配置SOCKS代理：<br>
+地址为127.0.0.1 端口为 9150 用户名和密码认证留空。</p>
+<p>** 注意：裸Tor和Tor Browser不同，裸Tor开放的是SOCKS 9050端口，Tor Browser是SOCKS 9150端口。 **</p>
+<p>如果你连接成功，觉得这个命令提示符窗口很碍事，可以创建VBS脚本让Tor在后台运行。</p>
+<p>创建Start.vbs文件，输入以下内容：</p>
+<pre><code>set ws=WScript.CreateObject(&quot;WScript.Shell&quot;)
+ws.Run &quot;Start.bat&quot;,0
+</code></pre>
+<p>保存，再次运行，你就会发现Tor在后台静默运行，没有命令提示符窗口了。</p>
+<p>也可以写一个用来关闭Tor的批处理，新建一个名为Stop.bat的批处理文件，输入以下代码：</p>
+<pre><code>@echo off
+taskkill /im tor.exe
+taskkill /im lyrebird.exe
+taskkill /im conjure-client.exe
+taskkill /im webtunnel-client.exe
+taskkill /im snowflake-client.exe
+</code></pre>
+<p>保存，运行即可关闭Tor和其他附属进程。</p>
+<h2 id="总结">总结</h2>
+<p>虽然可以使用Tor作为代理使用，但是根据Tor Project的文档，由于浏览器指纹等其他因素，这种方法会减少一定的匿名性，因此如果你像爱德华 斯诺登一样注重极致的安全和隐私，还是使用Tor Browser吧。</p>
+
+          </div>
+          
+            
+              <div class="mt-6">
+                <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'e00b7b0fe8f2446bfcdb',
+    clientSecret: '47c98b216b9a1e3fb82f0c45e697fe05b10cf218',
+    repo: 'HappyLeslieAlexander.github.io',
+    owner: 'HappyLeslieAlexander',
+    admin: ['HappyLeslieAlexander'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+              </div>
+            
+  
+            
+          
+        </div>
+        
+          <div class="w-full md:w-1/3">
+            <div class="mt-6 md:pl-8">
+              <h4 class="text-base font-thin text-gray-700 mb-2">发布时间</h4>
+              <div class="text-lg mb-6">2024-06-17</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">标签</h4>
+              <div class="mb-6">
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/Tor/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">Tor</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/Proxy/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">Proxy</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/Security/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">Security</a>
+                
+              </div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">阅读时间</h4>
+              <div class="text-lg mb-6">5 min read</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">相关阅读</h4>
+              <div class="border-b border-gray-400">
+                
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Domain-Fronting-EdgeTunnel/" class="text-lg hover:underline my-2 inline-block">域前置--搭建永不被墙的节点--复活已经被墙的节点</a>
+        </div>
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+
+  
+    
+      
+    
+      
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/VPN-Protocols/" class="text-lg hover:underline my-2 inline-block">浅谈VPN协议</a>
+        </div>
+      
+    
+  
+
+  
+    
+      
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Differences-Between-VPN-And-Proxy/" class="text-lg hover:underline my-2 inline-block">VPN和代理的区别</a>
+        </div>
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+              </div>
+            </div>
+          </div>
+        
+      </div>
+      <div class="footer border-gray-400 border-t pt-6 mt-6 sm:mt-8 md:mt-10 mb-20 text-gray-700 text-sm sm:text-base lg:text-lg">
+  本网页使用MarkDown语言进行编写，托管于GitHub Pages。 <br />
+<a href="https://icp.gov.moe/?keyword=20230638" target="_blank"><img style="height:16px;" src="https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230638%E5%8F%B7-ef82a0?labelColor=51c4d3%22%20data-lazy-src=%22https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230317%E5%8F%B7-ef82a0?labelColor=51c4d3" alt="萌ICP备20230638号" data-ll-status="loaded" class="entered loaded"></a> <br />
+<a href="https://guan.ma/hao/2024000123/" title="官码2024000123号"><img src="https://style.wmou.com/images/guanma.png" alt="官码" width="20">官码2024000123号</a> <br />
+本网站使用CloudFlare CDN进行保护和加速。
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudflare.webp" width="80px" height="16px" alt="CloudFlare"> <br />
+</div>
+    </div>
+  </div>
+  <script>
+    Prism.highlightAll()
+  </script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>使用PicGo+GitHub搭建免费图床 | Leslie Alexander的博客</title>
+<link rel="stylesheet" href="https://HappyLeslieAlexander.github.io/styles/main.css">
+<script src="https://HappyLeslieAlexander.github.io/media/script.js"></script>
+
+    
+
+  <meta name="description" content="前言
+经常写博客或使用MarkDown语法的朋友们一定会用到图床，有了图床，我们可以将图片或文件上传，返回一个 URL 链接，使用MarkDown语法粘贴到 Markdown 编辑器里就能显示出来。
+常见的免费图床有ImgURL、uploa...">
+  <script src="https://HappyLeslieAlexander.github.io/media/prism.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+  <div class="antialiased">
+    <div class="max-w-5xl mx-auto px-6 md:px-8">
+      <div class="flex justify-between items-center mt-10">
+  <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-900 font-medium md:font-normal leading-none">
+    <a href="https://HappyLeslieAlexander.github.io">Leslie Alexander的博客</a>
+  </h1>
+  <div class="block lg:hidden" id="thumb-menu">
+    <button id="thumb-open" type="button" class="block">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6H22V7H2V6ZM2 12H22V13H2V12ZM22 18H2V19H22V18Z" class="fill-current text-gray-900"></path></svg>
+    </button>
+    <button id="thumb-close" type="button" class="hidden">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4L20 20M20 4L4 20" class="" stroke="#1A202C"></path></svg>
+    </button>
+  </div>
+</div>
+<div id="nav-list" class="lg:block hidden">
+  <div class="w-full block lg:flex lg:justify-between lg:border-b lg:border-gray-400 mt-10 text-gray-700 font-medium lg:text-lg">
+    <div class="lg:flex -mb-px">
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io" class="nav-link">首页</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/aboutme" class="nav-link">关于</a>
+        
+      
+        
+          <a href="https://github.com/HappyLeslieAlexander" class="nav-link" target="_blank">GitHub</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/tags" class="nav-link">标签</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/archives" class="nav-link">归档</a>
+        
+      
+        
+          <a href="https://t.me/Depressed_LeslieAlexander" class="nav-link" target="_blank">Telegram</a>
+        
+      
+        
+          <a href="https://t.me/s/LeslieDiary" class="nav-link" target="_blank">Telegram 频道</a>
+        
+      
+        
+          <a href="https://t.me/LeslieGroup" class="nav-link" target="_blank">Telegram 群组</a>
+        
+      
+        
+          <a href="https://leslie-links.vercel.app/" class="nav-link" target="_blank">友情链接</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/donate" class="nav-link">捐赠</a>
+        
+      
+    </div>
+    <div class="lg:flex">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+      <a href="https://HappyLeslieAlexander.github.io/atom.xml" class="block mt-6 lg:mt-0 lg:ml-8 flex align-center hover:text-gray-900" target="_blank">
+        <div>RSS</div>
+        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="ml-1 -mt-px"><path d="M16.5 13V18.5H6.5V8.5H12" stroke="#4A5568"></path> <path d="M10 15L18.5 6.5" stroke="#4A5568"></path> <path d="M14 6.5H18.5V11" stroke="#4A5568"></path></svg>
+      </a>
+    </div>
+  </div>
+</div>
+      <div class="mb-20 md:flex mt-10 lg:mt-6 md:border-t md:border-gray-400 md:pt-2 lg:border-t-0 lg:pt-0">
+        <div class="w-full md:w-2/3 mt-6">
+          <h1 class="text-4xl">使用PicGo+GitHub搭建免费图床</h1>
+          
+            <img class="max-w-full mt-6 rounded-sm" src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting01.png" alt="">
+          
+          <div class="mt-6 lg:mt-10 post-content">
+            <h2 id="前言">前言</h2>
+<p>经常写博客或使用MarkDown语法的朋友们一定会用到图床，有了图床，我们可以将图片或文件上传，返回一个 URL 链接，使用MarkDown语法粘贴到 Markdown 编辑器里就能显示出来。</p>
+<p>常见的免费图床有ImgURL、upload.cc、SM.MS等等，但是用这些公共的免费图床未免难以管理，所以就诞生了这篇文章，用PicGo+GitHub搭建图床，并使用cdn.jsdelivr.net进行加速！</p>
+<h2 id="正文">正文</h2>
+<p>前往PicGo在GitHub的官方仓库：https://github.com/Molunerfinn/PicGo<br>
+在右侧Releases下载适合自己系统的版本，安装</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting02.png" alt="" loading="lazy"></figure>
+<p>打开PicGo主程序</p>
+<figure data-type="image" tabindex="2"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting03.png" alt="" loading="lazy"></figure>
+<p>接下来配置GitHub仓库和API Token：在GitHub新建一个仓库<br>
+前往：https://github.com/settings/tokens<br>
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting04.png" alt="" loading="lazy"><br>
+选择Generate new token，Generate new token（classic）<br>
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting05.png" alt="" loading="lazy"><br>
+随便输入一个token名称，将过期时间（Experation）调整为no experation（永不过期），勾选下面的整个repo，滑到页面最下方创建<br>
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting06.png" alt="" loading="lazy"><br>
+接着会显示你的token，复制备用<br>
+** 此token请妥善保管，只会在这里显示一次 **</p>
+<p>在PicGo左侧找到图床设置，选择GitHub，配置GitHub仓库</p>
+<p>仓库名：你的GitHub用户名/仓库名称<br>
+分支名：main<br>
+设定Token：刚刚复制下来的token<br>
+自定义域名：https://cdn.jsdelivr.net/gh/你的GitHub用户名/仓库名名称<br>
+（此项非必须，由于GitHub在国内经常受到SNI干扰，如果不使用cdn.jsdelivr.net加速可能会无法加载图片或速度极慢，推荐设定自定义域名）<br>
+点击确定，设为默认图床<br>
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting07.png" alt="" loading="lazy"></p>
+<p>回到左侧的上传区，就可以上传图片和文件到你的图床了！</p>
+<h2 id="注意事项">注意事项</h2>
+<ol>
+<li>上传的图片或文件位于你的GitHub仓库中，请勿在GitHub仓库中随意修改文件名</li>
+<li>GitHub仓库大小限制为1GB，单个文件限制为100MB，如果仓库满了可以开一个新仓库</li>
+<li>不需要的图片可以在PicGo左侧的相册内删除</li>
+<li>请勿上传私密图片或敏感内容</li>
+</ol>
+
+          </div>
+          
+            
+              <div class="mt-6">
+                <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'e00b7b0fe8f2446bfcdb',
+    clientSecret: '47c98b216b9a1e3fb82f0c45e697fe05b10cf218',
+    repo: 'HappyLeslieAlexander.github.io',
+    owner: 'HappyLeslieAlexander',
+    admin: ['HappyLeslieAlexander'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+              </div>
+            
+  
+            
+          
+        </div>
+        
+          <div class="w-full md:w-1/3">
+            <div class="mt-6 md:pl-8">
+              <h4 class="text-base font-thin text-gray-700 mb-2">发布时间</h4>
+              <div class="text-lg mb-6">2024-06-19</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">标签</h4>
+              <div class="mb-6">
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/jsdelivr/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">JSDELIVR</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/cdn/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">CDN</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/free/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">free</a>
+                
+              </div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">阅读时间</h4>
+              <div class="text-lg mb-6">2 min read</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">相关阅读</h4>
+              <div class="border-b border-gray-400">
+                
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Refresh-JSDELIVR-CDN/" class="text-lg hover:underline my-2 inline-block">刷新cdn.jsdelivr.net缓存内容</a>
+        </div>
+      
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Refresh-JSDELIVR-CDN/" class="text-lg hover:underline my-2 inline-block">刷新cdn.jsdelivr.net缓存内容</a>
+        </div>
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Domain-Fronting-EdgeTunnel/" class="text-lg hover:underline my-2 inline-block">域前置--搭建永不被墙的节点--复活已经被墙的节点</a>
+        </div>
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+              </div>
+            </div>
+          </div>
+        
+      </div>
+      <div class="footer border-gray-400 border-t pt-6 mt-6 sm:mt-8 md:mt-10 mb-20 text-gray-700 text-sm sm:text-base lg:text-lg">
+  本网页使用MarkDown语言进行编写，托管于GitHub Pages。 <br />
+<a href="https://icp.gov.moe/?keyword=20230638" target="_blank"><img style="height:16px;" src="https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230638%E5%8F%B7-ef82a0?labelColor=51c4d3%22%20data-lazy-src=%22https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230317%E5%8F%B7-ef82a0?labelColor=51c4d3" alt="萌ICP备20230638号" data-ll-status="loaded" class="entered loaded"></a> <br />
+<a href="https://guan.ma/hao/2024000123/" title="官码2024000123号"><img src="https://style.wmou.com/images/guanma.png" alt="官码" width="20">官码2024000123号</a> <br />
+本网站使用CloudFlare CDN进行保护和加速。
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudflare.webp" width="80px" height="16px" alt="CloudFlare"> <br />
+</div>
+    </div>
+  </div>
+  <script>
+    Prism.highlightAll()
+  </script>
+</body>
+</html>

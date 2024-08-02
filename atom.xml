@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://HappyLeslieAlexander.github.io</id>
+    <title>Leslie Alexander的博客</title>
+    <updated>2024-08-02T10:39:47.756Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://HappyLeslieAlexander.github.io"/>
+    <link rel="self" href="https://HappyLeslieAlexander.github.io/atom.xml"/>
+    <subtitle>茶要泡开才好喝，人要想开才好过.   &lt;br /&gt;
+Weaving codes and wit.</subtitle>
+    <logo>https://HappyLeslieAlexander.github.io/images/avatar.png</logo>
+    <icon>https://HappyLeslieAlexander.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2024, Leslie Alexander的博客</rights>
+    <entry>
+        <title type="html"><![CDATA[Cloudflare WARP地区分配规则和自选落地方案]]></title>
+        <id>https://HappyLeslieAlexander.github.io/post/cloudflare-warp-location/</id>
+        <link href="https://HappyLeslieAlexander.github.io/post/cloudflare-warp-location/">
+        </link>
+        <updated>2024-07-29T09:38:22.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2>
+<p>在使用 Cloudflare WARP 的节点时，不管是 WARP 的官方客户端，还是通过提取 WireGuard 配置的 WARP 节点，都是遵守地区就近任播的原则，分配一个和你连接所在地区就近的IP地址。但是有些人认为，从服务器端提取出来的 WARP 配置就是服务器的地区。以下讲述 WARP IP的地区分配的规则。</p>
+<h2 id="分配规则">分配规则</h2>
+<p>通常来讲，WARP 节点在连接之前，首先会使用 Maxmind 的 Geo Location 数据判断连接设备的所在IP地区。然后根据源IP地区，就近分配WARP IP地址。一般来讲，WARP 就近分配的IP地址大概率会在你所在地区的附近几个地区或城市，分配到他国说明 Maxmind 的数据库有误的概率比较小。</p>
+<h2 id="更改落地的方案">更改落地的方案</h2>
+<p>知道了WARP分配IP的原理之后，我总结了几种更改落地IP的方法：</p>
+<ol>
+<li>VPS使用iptables代理到engage.cloudflareclient.com:2408</li>
+<li>链式代理</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Xray配置Cloudflare WARP出口]]></title>
+        <id>https://HappyLeslieAlexander.github.io/post/xray-cloudflare-warp/</id>
+        <link href="https://HappyLeslieAlexander.github.io/post/xray-cloudflare-warp/">
+        </link>
+        <updated>2024-07-29T09:37:54.000Z</updated>
+        <content type="html"><![CDATA[<p>这是一个实例WARP配置：</p>
+<pre><code class="language-json">{
+    &quot;protocol&quot;: &quot;wireguard&quot;,
+    &quot;settings&quot;: {
+      &quot;secretKey&quot;: &quot;QEpQkyeHoNgZ2DHsXsm//EKjHGDLS5/fQzDYpzdrG3U=&quot;,
+      &quot;address&quot;: [
+        &quot;172.16.0.2/32&quot;,
+        &quot;2606:4700:110:887a:8057:5177:cd6d:7067/128&quot;
+      ],
+      &quot;peers&quot;: [
+        {
+          &quot;publicKey&quot;: &quot;bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=&quot;,
+          &quot;allowedIPs&quot;: [
+            &quot;0.0.0.0/0&quot;,
+            &quot;::/0&quot;
+          ],
+          &quot;endpoint&quot;: &quot;engage.cloudflareclient.com:2408&quot;
+        }
+      ],
+      &quot;reserved&quot;: [25, 59, 87],
+      &quot;mtu&quot;: 1280
+    },
+    &quot;tag&quot;: &quot;warp&quot;
+  }
+</code></pre>
+<p>可以将其配置在Xray中使代理节点的出口走WARP，从而解锁流媒体（Netflix需要刷IP）和ChatGPT。</p>
+<h2 id="xray-wireguard-warp的ip多情况选择">Xray WireGuard WARP的IP多情况选择：</h2>
+<p>当纯IPv4的VPS，删除&quot;172.16.0.2/32&quot;与&quot;0.0.0.0/0&quot;时，此时WARP的IP显示为一个IPv6地址</p>
+<p>当纯IPv4的VPS，删除&quot;2606:4700:110:891c:6ee2:7df4:5e99:b7cf/128&quot;与&quot;::/0&quot;时，此时WARP的IP显示为一个IPv4地址</p>
+<p>当默认情况下，WARP的IP显示为双栈IP</p>
+<p>当纯IPv6的VPS，删除&quot;172.16.0.2/32&quot;与&quot;0.0.0.0/0&quot;时，此时WARP的IP显示为一个IPv6地址</p>
+<p>当纯IPv6的VPS，删除&quot;2606:4700:110:891c:6ee2:7df4:5e99:b7cf/128&quot;与&quot;::/0&quot;时，此时WARP的IP显示为一个IPv4地址</p>
+<p>当默认情况下，WARP的IP显示为双栈IP</p>
+<p>删除IP时记得要相应地把用于分隔英语逗号&quot;,&quot;删除掉</p>
+<h2 id="warp配置中的endpoint建议改成ip地址以加快速度以下是vps连接warp的方式不是warp的ip">WARP配置中的endpoint建议改成IP地址以加快速度（以下是VPS连接WARP的方式，不是WARP的IP）</h2>
+<p>IPv4 VPS建议使用 162.159.192.1</p>
+<p>IPv6 VPS建议使用 [2606:4700:d0::a29f:c001]</p>
+<p>如果VPS既支持IPv4又支持IPv6，建议优先使用IPv6，因为解锁Netflix几率比较大</p>
+<h2 id="3x-ui可以在出站配置中配置访问目标网站使用ip规则">3X-UI可以在出站配置中配置访问目标网站使用IP规则：</h2>
+<ol>
+<li>
+<p>ForceIP：使用VPS设置，访问目标网站时优先使用IPv6，没有IPv6使用IPv4</p>
+</li>
+<li>
+<p>ForceIPv4：访问目标网站时仅使用IPv4</p>
+</li>
+<li>
+<p>ForceIPv6：访问目标网站时仅使用IPv6</p>
+</li>
+<li>
+<p>ForceIPv4v6：访问目标网站时优先使用IPv4，IPv6作为次要方案</p>
+</li>
+<li>
+<p>ForceIPv6v4：访问目标网站时优先使用IPv6，IPv4作为次要方案</p>
+</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Cloudflare优选域名]]></title>
+        <id>https://HappyLeslieAlexander.github.io/post/cloudflare-domain/</id>
+        <link href="https://HappyLeslieAlexander.github.io/post/cloudflare-domain/">
+        </link>
+        <updated>2024-07-29T09:36:57.000Z</updated>
+        <content type="html"><![CDATA[<p>Cloudflare优选域名—主打稳定</p>
+<p>联通优化</p>
+<p>unicom-anycast.argun.rr.nu</p>
+<p>移动优化</p>
+<p>mobile-anycast.argun.rr.nu</p>
+<p>电信优化</p>
+<p>telecom-anycast.argun.rr.nu</p>
+<p>通用网络</p>
+<p>anycast.argun.rr.nu</p>
+<p>具备IPv6支持</p>
+<p>有的人反应我的优选域名解析的太少，而且延迟不比较高，没有别人的延迟低，这里我解释一下：<br>
+解析的IP多，不代表质量好，我的优选域名主打稳定<br>
+大部分的优选域名是测Cloudflare边缘CDN节点延迟，然后筛选出延迟低的，但是这里有个误区，延迟低不一定速度就快，因为正常在发包的过程中即使第一次发包延迟比较高，但是后续继续发包就会低下来。我搭建的优选域名主要是优选线路，线路好，不一定延迟低，但是在速度会跑满（中间有个过程，不能一下子跑满），丢包率会更低。</p>
+<p>联通走的美国加利福尼亚洛杉矶，移动没什么好线路，走的香港（丢包率会比较高，但是速度能跑得很高，介意的话可以把移动解析到通用网络），电信走的美国加利福尼亚圣何塞</p>
+<p>现在Cloudflare的SaaS接入会检测CNAME记录，必须指向回退源，因此如果要加速网站请使用国内的DNS解析商（腾讯云 阿里云 华为云），推荐使用腾讯云的DNSPod，分别将三网的解析CNAME到上面对应的运营商优选域名，然后境外设置成你默认的回退源，这样就可以绕过Cloudflare的DNS记录检测。<br>
+默认网络速度不是每个运营商中最快的，但是是最稳定的。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[刷新cdn.jsdelivr.net缓存内容]]></title>
+        <id>https://HappyLeslieAlexander.github.io/post/Refresh-JSDELIVR-CDN/</id>
+        <link href="https://HappyLeslieAlexander.github.io/post/Refresh-JSDELIVR-CDN/">
+        </link>
+        <updated>2024-07-09T12:23:36.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2>
+<p>众所周知，写博客的都会用到图床，前面的一期博客我介绍了如何使用开源项目PicGo+GitHub+JSDELIVR CDN搭建一个属于自己的可以在中国大陆使用的图床，然而近期我在使用JSDELIVR时，发现了一个问题：当我替换GitHub图床上的照片时，JSDELIVR往往不会刷新缓存，图片还是停留在之前的版本，引起博客图片错乱，今天分享解决方法。</p>
+<h2 id="正文">正文</h2>
+<p>如下图所示，这是我已经上传在GitHub上的一张名为&quot;test image.png&quot;的图片，通过JSDELIVR的CDN访问，正确显示了PicGo的首页截图，URL为：https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/test%20image.png</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Refresh-JSDELIVR-CDN.png" alt="" loading="lazy"></figure>
+<p>接着，我前往GitHub删除这张照片，在PicGo的相册里也删除这张照片避免冲突报错。重新上传一张名为&quot;test image.png&quot;的图片但图像内容是富士山。</p>
+<p>前往GitHub上查看，图像正确显示为富士山的照片</p>
+<figure data-type="image" tabindex="2"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/RJC01.png" alt="" loading="lazy"></figure>
+<p>前往cdn.jsdelivr.net上查看，发现图片仍然停留在PicGo的首页截图</p>
+<figure data-type="image" tabindex="3"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Refresh-JSDELIVR-CDN.png" alt="" loading="lazy"></figure>
+<p>此时，如果替换的图片比较多，博客的图片已经乱作一团了，我们需要手动刷新CDN缓存，刷新其实很简单，使用浏览器访问或使用curl命令请求该URL路径：https://purge.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/test%20image.png ，也就是把原本域名前缀cdn改成purge</p>
+<p>我使用curl命令，返回了如下内容：</p>
+<pre><code>StatusCode        : 200
+StatusDescription : OK
+Content           : {
+                      &quot;id&quot;: &quot;1PYgHVtvc62OUbeX&quot;,
+                      &quot;status&quot;: &quot;finished&quot;,
+                      &quot;timestamp&quot;: &quot;2024-07-09T12:51:36.949Z&quot;,
+                      &quot;paths&quot;: {
+                        &quot;/gh/HappyLeslieAlexander/PicGo01/test image.png&quot;: {
+                          &quot;throttled&quot;: false,
+                          &quot;...
+RawContent        : HTTP/1.1 200 OK
+                    Transfer-Encoding: chunked
+                    Connection: keep-alive
+                    CF-Ray: 8a08724b990fbc41-ZRH
+                    CF-Cache-Status: DYNAMIC
+                    Access-Control-Allow-Origin: *
+                    Vary: Accept-Encoding, Accept-Encoding
+                    acc...
+Forms             : {}
+Headers           : {[Transfer-Encoding, chunked], [Connection, keep-alive], [CF-Ray, 8a08724b990fbc41-ZRH], [CF-Cache-
+                    Status, DYNAMIC]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 272
+</code></pre>
+<p>此时CDN缓存已经成功刷新，重新访问：https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/test%20image.png ，发现已经显示为正确的富士山图片（如果图片仍停留在之前的版本，再刷新一下即可）</p>
+<figure data-type="image" tabindex="4"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/RJC02.png" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[域前置--搭建永不被墙的节点--复活已经被墙的节点]]></title>
+        <id>https://HappyLeslieAlexander.github.io/post/Domain-Fronting-EdgeTunnel/</id>
+        <link href="https://HappyLeslieAlexander.github.io/post/Domain-Fronting-EdgeTunnel/">
+        </link>
+        <updated>2024-07-03T05:07:50.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2>
+<blockquote>
+<blockquote>
+<p>域前置（英语：Domain fronting），是一种隐藏连接真实端点来规避互联网审查的技术。在应用层上运作时，域前置使用户能通过HTTPS连接到被屏蔽的服务，而表面上像在与另一个完全不同的站点通信。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>此技术的原理为在不同通信层使用不同的域名。在明文的DNS请求和TLS服务器名称指示（SNI）中使用无害的域名来初始化连接、公布给审查者，而实际要连接的“敏感”域名仅在建立加密的HTTPS连接后发出，使其不以明文暴露给网络审查者。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>这种举动在被封锁的站点与无害站点为同一个大型服务提供商时较为可行，例如由内容分发网络提供的服务。此时审查者通常很难区分被伪装流量与合法流量的特点，迫使审查者选择放行所有看似无害的流量，或者选择彻底封锁此域的流量。而彻底封锁可能带来显著的附加损害。--维基百科</p>
+</blockquote>
+</blockquote>
+<p>Tor提供一种用来规避审查的网桥叫做meek，其本质是使用了域前置技术。什么是域前置技术？简单来说，我要访问已经被封锁的A网站，我伪造A网站请求，使审查者认为我在访问没有被封锁的B网站，从而放行我的流量。由于域前置可以偷跑别人域名的流量和证书，大多数CDN提供商都停止了对域前置的支持，目前仍支持域前置的还有Fastly、Gcore、Azure。</p>
+<p>域前置只要求使用CDN和TLS加密，因此，域前置可以用来避免节点被GFW封锁或复活已经被封禁的GFW节点。本期博客以EdgeTunnel（Cloudflare VLESS WebSocket TLS）节点和Fastly的CDN为例。</p>
+<h2 id="配置域前置">配置域前置</h2>
+<p>以下是一个配置好的标准的EdgeTunnel节点，经过测试可以正常使用：</p>
+<pre><code>vless://8820e16b-fbc2-49d3-90e4-eeeb8301c83c@www.visa.com.hk:443?security=tls&amp;sni=vless.leslieblog.buzz&amp;fp=randomized&amp;type=ws&amp;path=/?ed%3D2560&amp;host=vless.leslieblog.buzz&amp;encryption=none#Leslie-Workers/Pages-TLS
+</code></pre>
+<p>配置如图所示：<br>
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/EdgeTunnel.png" alt="" loading="lazy"></p>
+<p>打开Fastly官网：https://www.fastly.com/ ，注册账号并登录</p>
+<p>找到左侧CDN-CDN Services-Create Service-CDN</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly01.png" alt="" loading="lazy"></figure>
+<p>服务名随意，own domain-Domain随意填，这将是你的WebSocket主机，不一定要是你的域名，比如这里我填写nmsl.hk，origin-Host填写你的节点IP或者域名，我这里填写 vless.leslieblog.buzz，点击下方的Activate激活CDN服务</p>
+<p>激活后点击右上方的 Edit configuration-Clone version 1 (active) to edit</p>
+<p>** 注意，以下内容非常关键 **</p>
+<ol>
+<li>配置回源</li>
+</ol>
+<p>点击左侧的Hosts，在右侧点击你的源域名</p>
+<figure data-type="image" tabindex="2"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly03.png" alt="" loading="lazy"></figure>
+<p>在Enable TLS的区域配置回源TLS和端口：比如我演示的这个EdgeTunnel节点启用了TLS，使用443端口，我就选择Yes, enable TLS and connect securely using port，并输入443。依据你要套域前置的节点配置来更改，改好后划到最下方Update</p>
+<figure data-type="image" tabindex="3"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly07.png" alt="" loading="lazy"></figure>
+<ol>
+<li>配置WebSocket</li>
+</ol>
+<p>在左侧找到WebSockets</p>
+<figure data-type="image" tabindex="4"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly04.png" alt="" loading="lazy"></figure>
+<p>点击Free Trial试用（没错，Fastly家的WebSocket不是免费的，只能试用三十天，但是据测试30天后已经启用WebSocket的服务依然可以正常使用），打开WebSockets</p>
+<figure data-type="image" tabindex="5"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly05.png" alt="" loading="lazy"></figure>
+<p>在左侧找到VLC snippets</p>
+<figure data-type="image" tabindex="6"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly06.png" alt="" loading="lazy"></figure>
+<p>在右侧点击Create your first VCL snippet，Name填写 ws<br>
+VLC代码如下：</p>
+<pre><code>if (req.http.Upgrade) {
+    return (upgrade);
+}
+</code></pre>
+<p>点击下方的Create创建</p>
+<p>至此配置完成，点击右上角的Activate激活配置</p>
+<figure data-type="image" tabindex="7"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly08.png" alt="" loading="lazy"></figure>
+<h2 id="配置节点">配置节点</h2>
+<p>下面将套了域前置的节点导入代理工具：</p>
+<p>我以NekoRay为例：</p>
+<ol>
+<li>
+<p>将地址改为任意使用了Fastly的网站或Fastly的CDN IP（我使用www.gov.uk）</p>
+</li>
+<li>
+<p>启用TLS，端口改为443</p>
+</li>
+<li>
+<p>ws设置中的Host改为刚刚设置的nmsl.hk</p>
+</li>
+<li>
+<p>TLS安全设置的SNI改为地址中填写的域名（如果你用的IP作为地址，则填写任意使用了Fastly CDN的域名，比如www.gov.uk，并启用不检查服务器证书）</p>
+</li>
+</ol>
+<figure data-type="image" tabindex="8"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly09.png" alt="" loading="lazy"></figure>
+<p>保存，经测试，有真连接延迟，可以正常使用</p>
+<h2 id="回顾">回顾</h2>
+<p>本期博客讲述的域前置实现节点不被墙和复活已经被墙节点的原理是偷了白名单域名的SNI（比如我偷的www.gov.uk），绕过GFW检测。</p>
+<p>但这种方法的滥用很可能导致Fastly的IP段被大面积封禁，因此出这期教程时我是很纠结的，我不希望Fastly再被滥用得像Cloudflare CDN一样。</p>
+<p>最后讲一下域前置的适用节点配置和注意事项：</p>
+<p>支持节点配置：<br>
+VMess+WebSocket<br>
+VMess+Websocket+TLS<br>
+Vless+WebSocket<br>
+Vless+Websocket+TLS<br>
+Trojan+WebSocket<br>
+Trojan+WebSocket+TLS</p>
+<p>注意事项：</p>
+<ol>
+<li>由于需要Fastly的CDN中转流量，因此只能用WebSocket作为传输协议</li>
+<li>不要使用优选Fastly CDN IP+WebSocket的配置，没有TLS加密不能起到域前置伪装的作用，而且容易把Fastly的IP送GFW</li>
+<li>使用域前置注定不会快，此方法仅当作防止在敏感时期失联的备用紧急方法</li>
+<li>滥用可耻</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[解决免费域名ClouDNS的一些问题]]></title>
+        <id>https://HappyLeslieAlexander.github.io/post/Solve-Cloudns-Free-Domain-Issues/</id>
+        <link href="https://HappyLeslieAlexander.github.io/post/Solve-Cloudns-Free-Domain-Issues/">
+        </link>
+        <updated>2024-06-25T07:05:59.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2>
+<p>免费域名千千万，但不用续期就能一直用下去的并不多，eu.org因为abuse得太厉害已经被SNI干扰作古了，现在最容易薅的永久域名莫过于ClouDNS。注册账号，选择免费DNS zone计划，添加上一个自己心意的域名，删除原有的NS记录，添加两个NS记录到Cloudflare的NameServer，即可将这个永久免费二级域名托管到Cloudflare。但是，在使用过程中会出现无法解析、无法颁发SSL/TLS边缘证书、无法启动Cloudflare CDN（不推荐）的问题，今天分享一下前两个问题的解决方案。</p>
+<h2 id="解析">解析</h2>
+<p>ClouDNS的域名实际上不能完全托管到Cloudflare上，最多只能算是个半托管，需要双重解析，实际上就是同时在Cloudflare和ClouDNS里添加解析。我以我的域名leslieproxynodes.dns-dynamic.net为例，添加一条A记录，让test.leslieproxynodes.dns-dynamic.net解析到IPV4地址1.1.1.1：</p>
+<p>先在Cloudflare里添加A记录，将test.leslieproxynodes.dns-dynamic.net解析到IPV4地址1.1.1.1，关掉CDN，保存</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudns01.png" alt="" loading="lazy"></figure>
+<p>再到Cloudns添加一条相同的A记录，保存</p>
+<figure data-type="image" tabindex="2"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudns02.png" alt="" loading="lazy"></figure>
+<p>稍作等待（大约2分钟）</p>
+<p>尝试ping test.leslieproxynodes.dns-dynamic.net，发现已经解析出IP地址1.1.1.1，解析生效，问题解决。</p>
+<figure data-type="image" tabindex="3"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/cloudns03.png" alt="" loading="lazy"></figure>
+<h2 id="颁发ssltls证书">颁发SSL/TLS证书</h2>
+<p>前往Cloudflare边缘证书，发现状态一直是待验证，点开详情，找到TXT记录信息</p>
+<figure data-type="image" tabindex="4"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/cloudns04.png" alt="" loading="lazy"></figure>
+<p>复制下来名称内容，前往Cloudns添加两条TXT记录，填写Cloudflare边缘证书里面信息，保存，等待记录生效（大约30分钟）</p>
+<figure data-type="image" tabindex="5"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/cloudns05.png" alt="" loading="lazy"></figure>
+<p>大概20分钟，也是看到边缘证书变成了有效</p>
+<figure data-type="image" tabindex="6"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/cloudns06.png" alt="" loading="lazy"></figure>
+<h2 id="开启cdn">开启CDN</h2>
+<p>在Cloudflare里添加解析，开启CDN，前往Cloudns添加两条解析，域名一样，但目标改为Cloudflare CDN IPv4和Cloudflare CDN IPv6地址，地址通过Ping来获取</p>
+<h2 id="总结">总结</h2>
+<p>虽然ClouDNS的免费域名永久使用，但是使用起来非常麻烦，因此如果有条件的话仍然建议使用pp.ua、us.kg或者买一个1美元一年的.top域名，实在要用ClouDNS，也可以不托管Cloudflare直接使用Cloudns的NS解析。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[使用PicGo+GitHub搭建免费图床]]></title>
+        <id>https://HappyLeslieAlexander.github.io/post/PicGo-GitHub-Image-Hosting/</id>
+        <link href="https://HappyLeslieAlexander.github.io/post/PicGo-GitHub-Image-Hosting/">
+        </link>
+        <updated>2024-06-19T07:27:38.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2>
+<p>经常写博客或使用MarkDown语法的朋友们一定会用到图床，有了图床，我们可以将图片或文件上传，返回一个 URL 链接，使用MarkDown语法粘贴到 Markdown 编辑器里就能显示出来。</p>
+<p>常见的免费图床有ImgURL、upload.cc、SM.MS等等，但是用这些公共的免费图床未免难以管理，所以就诞生了这篇文章，用PicGo+GitHub搭建图床，并使用cdn.jsdelivr.net进行加速！</p>
+<h2 id="正文">正文</h2>
+<p>前往PicGo在GitHub的官方仓库：https://github.com/Molunerfinn/PicGo<br>
+在右侧Releases下载适合自己系统的版本，安装</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting02.png" alt="" loading="lazy"></figure>
+<p>打开PicGo主程序</p>
+<figure data-type="image" tabindex="2"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting03.png" alt="" loading="lazy"></figure>
+<p>接下来配置GitHub仓库和API Token：在GitHub新建一个仓库<br>
+前往：https://github.com/settings/tokens<br>
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting04.png" alt="" loading="lazy"><br>
+选择Generate new token，Generate new token（classic）<br>
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting05.png" alt="" loading="lazy"><br>
+随便输入一个token名称，将过期时间（Experation）调整为no experation（永不过期），勾选下面的整个repo，滑到页面最下方创建<br>
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting06.png" alt="" loading="lazy"><br>
+接着会显示你的token，复制备用<br>
+** 此token请妥善保管，只会在这里显示一次 **</p>
+<p>在PicGo左侧找到图床设置，选择GitHub，配置GitHub仓库</p>
+<p>仓库名：你的GitHub用户名/仓库名称<br>
+分支名：main<br>
+设定Token：刚刚复制下来的token<br>
+自定义域名：https://cdn.jsdelivr.net/gh/你的GitHub用户名/仓库名名称<br>
+（此项非必须，由于GitHub在国内经常受到SNI干扰，如果不使用cdn.jsdelivr.net加速可能会无法加载图片或速度极慢，推荐设定自定义域名）<br>
+点击确定，设为默认图床<br>
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Picture%20Hosting07.png" alt="" loading="lazy"></p>
+<p>回到左侧的上传区，就可以上传图片和文件到你的图床了！</p>
+<h2 id="注意事项">注意事项</h2>
+<ol>
+<li>上传的图片或文件位于你的GitHub仓库中，请勿在GitHub仓库中随意修改文件名</li>
+<li>GitHub仓库大小限制为1GB，单个文件限制为100MB，如果仓库满了可以开一个新仓库</li>
+<li>不需要的图片可以在PicGo左侧的相册内删除</li>
+<li>请勿上传私密图片或敏感内容</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[洋葱路由（Tor）的高级用法]]></title>
+        <id>https://HappyLeslieAlexander.github.io/post/Tor-Proxy/</id>
+        <link href="https://HappyLeslieAlexander.github.io/post/Tor-Proxy/">
+        </link>
+        <updated>2024-06-17T06:24:24.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2>
+<p>Tor 浏览器（Tor Browser）本质上是Firefox ESR + Tor，浏览器的所有流量都会通过Tor网络传输，那么，我们可不可以把Tor作为代理或者VPN使用呢？</p>
+<p>在Android和iOS上有一款叫Orbot的App，可以将Tor作为VPN使用，那么在PC端应该怎么操作呢？这期就来讲一下在Windows端上的操作。</p>
+<h2 id="tor-browser作为代理">Tor Browser作为代理</h2>
+<p>在Tor Browser中配置好网桥，连接上Tor网络，不要关闭。</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20Browser.png" alt="" loading="lazy"></figure>
+<p>此时Tor Browser会在本地开放SOCKS 9150端口，使用V2RayN等代理软件，配置SOCKS代理：<br>
+地址为127.0.0.1 端口为 9150 用户名和密码认证留空。<br>
+我使用NekoRay作为演示：</p>
+<figure data-type="image" tabindex="2"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20Browser%20Proxy.png" alt="" loading="lazy"></figure>
+<p>配置如上图所示，选中连接<br>
+打开Chrome，进入 https://check.torproject.org/ 检查连接，发现已经可以使用Tor来翻墙了。</p>
+<figure data-type="image" tabindex="3"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20Check.png" alt="" loading="lazy"></figure>
+<p>** 以上这种方法适合绝大多数人，如果你不会命令，那么你不用继续往下读了 **</p>
+<h2 id="使用裸tortor专家包">使用裸Tor（Tor专家包）</h2>
+<p>前往 https://www.torproject.org/download/tor/ 下载适合你系统版本的Tor专家包，解压出来，将data目录下的 geoip 和 geoip6 两个文件移动到tor目录下，此时这些文件应该在一起。</p>
+<figure data-type="image" tabindex="4"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20Files.png" alt="" loading="lazy"></figure>
+<p>接着创建一个名为 torrc 的文件，用记事本打开，输入以下内容：</p>
+<pre><code>#下面是跨机共享代理，去掉前面#号即可开启
+#SocksPort 0.0.0.0:9050
+
+#下面是前置代理，去掉前面#号即可开启
+#HTTPSProxy TARGET:PORT
+#HTTPSProxyAuthenticator USER:PASSOWRD
+#Socks5Proxy TARGET:PORT
+#Socks5ProxyUsername USERNAME
+#Socks5ProxyPassword PASSWORD
+
+#下面数字改为0，关闭自带网桥连接，开启前置代理
+UseBridges 1    
+
+#指定GeoIP文件路径
+DataDirectory ./
+GeoIPFile ./geoip
+GeoIPv6File ./geoip6
+
+#下面日志路径，打开后终端不会显示连接日志
+#Log notice file ./Data/tor.log 
+#StrictNodes 1
+
+#启用减少磁盘读写
+AvoidDiskWrites 1
+
+#下面是排除邪恶国家节点，去掉前面#号即可开启
+#ExcludeExitNodes {cn},{hk},{mo},{sg},{th},{pk},{by},{ru},{ir},{vn},{ph},{my},{cu}
+#ExcludeNodes {cn},{hk},{mo},{sg},{th},{pk},{by},{ru},{ir},{vn},{ph},{my},{cu}
+
+#下面是指定不同网桥使用哪些程序运行
+ClientTransportPlugin obfs4 exec ./pluggable_transports/lyrebird.exe managed
+ClientTransportPlugin snowflake exec ./pluggable_transports/snowflake-client.exe managed
+ClientTransportPlugin Conjure exec ./pluggable_transports/conjure-client.exe managed
+ClientTransportPlugin webtunnel exec ./pluggable_transports/webtunnel-client.exe managed
+
+#下面填获取到的网桥，以obfs4/snowflake/webtunnel/conjure开头的，前面必须加上Bridge
+Bridge obfs4 XXXX.XXXX.XXXX:XXXXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX iat-mode=0
+
+#tor默认的重建链路的时间是30s，可以适当延长时间保证速度
+NewCircuitPeriod 30
+
+## 更多配置信息可以在 https://2019.www.torproject.org/docs/tor-manual.html.en 获取到
+</code></pre>
+<p>保存，接着新建一个名为 Start.bat 的文件，输入以下内容：</p>
+<pre><code>@echo off
+tor.exe -f torrc
+</code></pre>
+<p>保存，运行，接着会弹出一个命令提示符窗口，第一次连接会比较慢，稍作等待。</p>
+<figure data-type="image" tabindex="5"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Tor%20In%20Terminal.png" alt="" loading="lazy"></figure>
+<p>等到出现 100% Done 字样说明连接成功，然后你就可以在代理工具中配置代理了。<br>
+此时Tor Browser会在本地开放SOCKS 9050端口，使用V2RayN等代理软件，配置SOCKS代理：<br>
+地址为127.0.0.1 端口为 9150 用户名和密码认证留空。</p>
+<p>** 注意：裸Tor和Tor Browser不同，裸Tor开放的是SOCKS 9050端口，Tor Browser是SOCKS 9150端口。 **</p>
+<p>如果你连接成功，觉得这个命令提示符窗口很碍事，可以创建VBS脚本让Tor在后台运行。</p>
+<p>创建Start.vbs文件，输入以下内容：</p>
+<pre><code>set ws=WScript.CreateObject(&quot;WScript.Shell&quot;)
+ws.Run &quot;Start.bat&quot;,0
+</code></pre>
+<p>保存，再次运行，你就会发现Tor在后台静默运行，没有命令提示符窗口了。</p>
+<p>也可以写一个用来关闭Tor的批处理，新建一个名为Stop.bat的批处理文件，输入以下代码：</p>
+<pre><code>@echo off
+taskkill /im tor.exe
+taskkill /im lyrebird.exe
+taskkill /im conjure-client.exe
+taskkill /im webtunnel-client.exe
+taskkill /im snowflake-client.exe
+</code></pre>
+<p>保存，运行即可关闭Tor和其他附属进程。</p>
+<h2 id="总结">总结</h2>
+<p>虽然可以使用Tor作为代理使用，但是根据Tor Project的文档，由于浏览器指纹等其他因素，这种方法会减少一定的匿名性，因此如果你像爱德华 斯诺登一样注重极致的安全和隐私，还是使用Tor Browser吧。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[浅谈VPN协议]]></title>
+        <id>https://HappyLeslieAlexander.github.io/post/VPN-Protocols/</id>
+        <link href="https://HappyLeslieAlexander.github.io/post/VPN-Protocols/">
+        </link>
+        <updated>2024-06-17T01:21:40.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2>
+<p>VPN协议不断迭代更新，协议千千万，究竟哪种协议安全且传输速度快呢？今天浅谈各个VPN协议。</p>
+<h2 id="pptppoint-to-point-tunneling-protocol">PPTP（Point-to-Point Tunneling Protocol）</h2>
+<p>端对端隧道协议是第一个VPN协议，它已有20多年的历史。该协议依赖于加密，认证和端对端协议（PPP）进行协商。实质上，它只需要用户名，密码和服务器地址就可创建连接。</p>
+<p>大多数设备都支持PPTP，因为设置起来非常简单，在VPN公司中也很受欢迎。PPTP非常快，因此，想要规避网络中地理限制的人更喜欢该协议。</p>
+<p>但是，速度是以弱加密性为代价的。在所有协议中，PPTP加密级别最低。甚至微软也建议人们远离PPTP，从安全的角度来看，PPTP是完全不合格的。</p>
+<p>功能：</p>
+<ol>
+<li>
+<p>路线推送：该功能可自动为用户端提供远程网络中的路由信息，使其能够使用内网资源。</p>
+</li>
+<li>
+<p>TCP 和 UDP 支持： PPTP VPN 协议支持 TCP 和 UDP 流量传输，因此在传输各种类型的数据时用途广泛。</p>
+</li>
+<li>
+<p>推送 DNS 服务器： PPTP 可以自动为客户机分配 DNS 服务器，从而简化设置过程，并确保正确、安全的名称解析，尤其是对本机域内的名称。</p>
+</li>
+<li>
+<p>使用身份提供商： PPTP 在与目录服务集成方面非常灵活。Windows 中的 PPTP VPN 服务器与 Active Directory（Microsoft 的另一个产品）集成得很好，并为 RADIUS 提供良好的支持。由于 Active Directory 的功能，PPTP VPN 服务器可以与 LDAP 集成，允许使用现有的用户数据库及其帐户进行 VPN 访问。</p>
+</li>
+<li>
+<p>加密算法的使用：PPTP 主要使用 MS-CHAP v2 身份验证系统和基于流密码 RC4 的 MPPE 加密算法。</p>
+</li>
+</ol>
+<p>优点：</p>
+<ol>
+<li>
+<p>由于 PPTP 协议是由 Microsoft 开发的，因此它能很好地与 Windows 系统和其他Microsoft 软件解决方案集成整合。这就为使用 Windows 计算机的大公司提供了极大的便利。</p>
+</li>
+<li>
+<p>速度快：由于较低的加密强度，传输速度较快。</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>
+<p>PPTP 协议目前的主要缺点是存在的安全漏洞。“中间人攻击”（Man-in-the-middle attack）会破坏通过 PPTP 隧道的流量。</p>
+</li>
+<li>
+<p>PPTP 使用的标准加密基于 MPPE，MPPE使用RC4流密码进行加密。没有对密文流进行认证的方法，因此密文很容易受到比特翻转攻击。攻击者可以在传输过程中修改流并调整单比特来改变输出流而不被检测到。这些位翻转可能会被协议本身通过校验和或其他方式检测到。</p>
+</li>
+<li>
+<p>MS-CHAP-v1是不安全的，因为已有工具可以从捕获到的MSCHAP-v1交换包中轻易地提取出NT密码的哈希值。当使用MS-CHAP-v1时，MPPE在通信流的两个方向上使用相同的RC4会话密钥进行加密。这可以通过将每个方向的数据流一起进行异或运算，用标准方法进行密文分析。MS-CHAP-v2对捕获的挑战响应（challenge response）数据包容易受到字典攻击。目前已有工具可以快速执行这一过程。2012年，有研究表明，对MS-CHAP-v2密钥进行暴力攻击的复杂性相当于对单个DES密钥进行暴力攻击。还演示了一项在线服务，它能够在23小时内解密MS-CHAP-v2 MD4口令。</p>
+</li>
+<li>
+<p>EAP-TLS被认为是PPTP的高级认证选择。然而，它需要为用户和服务器证书实现公钥基础设施。因此，对于一些远程访问的设备来说，它可能不是一个可行的认证选择。</p>
+</li>
+<li>
+<p>GFW可以轻松拦截，因为流量特征被吃透了。</p>
+</li>
+</ol>
+<p>实现原理：</p>
+<p>PPTP 是第一个被 Microsoft 拨号网络支持的 VPN 通信协议。自 Windows 95 OSR2 起，所有的 Microsoft Windows 版本都内置了 PPTP 客户端软件（虽然只能支持最多两个同时对外的连线）。 在 Mobile 版本上，Microsoft Windows Mobile 2003 与更新的版本也支持 PPTP。Windows 的路由及远程访问包有包含 PPTP 服务器。 Microsoft 的实现在 MS-CHAP 认证协议内使用了单次 DES 加密，但单次 DES 常被认为无法提供资料足够等级的安全防护。</p>
+<p>Windows Vista 与更新版本的 PPTP 开始支持 PEAP。认证机制有 PEAPv0 / EAP-MSCHAPv2 (使用密码) 还有 PEAP-TLS (智能卡与证书)。 Windows Vista 同时停止了 MSCHAP-v1 的认证协议。</p>
+<p>Linux 的 PPTP 服务器一般是使用 PoPToP包加上 PPP 与 MPPE 的 Kernel Module。PPTP的客户端程序从 1997就开始提供了，但服务器部分要等到 Matthew Ramsay 在 1999[6]开发的版本从 Moreton Bay 以 GNU GPL 发行后才真正开始有人大量使用。但是，Linux发行版本一开始通常都不包含 MPPE 的部分（因为担心有专利问题）所以不完整，直到 2005/10/28 发布的 Linux Kernel 2.6.14 才正式支持 MPPE。 SuSE Linux 10 是第一个有完整可用的 PPTP 客户端程序的版本。另外还有 ACCEL-PPP 包: 它提供了 PPTP / L2TP / PPPoE 服务器，可提供 kernel 模式的 PPTP 协议。</p>
+<p>OpenBSD 跟 FreeBSD 在 &quot;ports&quot; 包系统里提供 PoPToP。 macOS 与 iOS 曾提供内置 PPTP 客户端程序，但在 2016 年发表的 iOS 10 和 macOS Sierra 中，PPTP 支持被移除。 OS X Server 内置了 PPTP 服务。 Cisco 与 Efficient Networks 有另外贩卖给旧版 Mac OS 使用的 PPTP 客户端程序。 许多 Android 智能手机也支持 PPTP，不过官方版本的 Android 12 已移除了PPTP功能。</p>
+<h2 id="l2tpipseclayer-2-tunneling-protocolinternet-protocol-security">L2TP/IPsec（Layer 2 Tunneling Protocol/Internet Protocol Security）</h2>
+<p>要完全理解2层隧道协议（L2TP），首先要提到2层转发（L2F）。在PPTP发布后不久，思科就开发了L2F，试图改进PPTP的缺陷。但不幸的是，L2F也不完美。</p>
+<p>此后，他们在1999年发布了L2TP作为对PPTP和L2F的改进。L2TP结合了L2F和PPTP的优点，提供了更安全可靠的隧道协议。</p>
+<p>但请注意，L2TP只是一种隧道协议，既不提供加密也不保证隐私。由于缺乏加密，L2TP不能单独作为安全协议使用，必须与IPsec配对，IPsec是一种带有加密功能的安全协议。L2TP和IPsec协议的组合使用带来一种双封装的概念。</p>
+<p>在双封装中，第一个封装将创建客户端到远程主机的PPP连接，第二个封装将使用IPsec。</p>
+<p>L2TP支持AES 256加密算法——可以说是最安全的——它可以防止中间人攻击。</p>
+<p>请记住，由于双重封装，协议的速度较慢。此外，L2TP协议只能通过UDP协议进行通信。一旦UDP协议受到限制，会极大影响L2TP。</p>
+<p>优点：</p>
+<ol>
+<li>
+<p>较为安全</p>
+</li>
+<li>
+<p>支持多种平台，几乎所有现代操作系统都支持L2TP/IPsec。</p>
+</li>
+<li>
+<p>支持多线程</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>
+<p>较复杂的设置：需要额外的配置，特别是在防火墙和路由器上。</p>
+</li>
+<li>
+<p>性能可能稍差：由于双重封装（L2TP和IPsec），性能可能受到影响。</p>
+</li>
+<li>
+<p>Edward Snowden和John Gilmore都指出，NSA也许能攻破IPSec的保护</p>
+</li>
+<li>
+<p>GFW可以轻松拦截，因为流量特征被吃透了。</p>
+</li>
+</ol>
+<p>实现原理：</p>
+<p>L2TP创建隧道，IPsec提供加密和认证。L2TP本身不提供加密，通常结合IPsec使用。IPsec使用ESP（Encapsulating Security Payload）和AH（Authentication Header）提供数据加密和认证。</p>
+<h2 id="sstpsecure-socket-tunneling-protocol">SSTP（Secure Socket Tunneling Protocol）</h2>
+<p>安全套接字隧道协议（SSTP）与OpenVPN非常相似，唯一的区别在于它是Microsoft在Windows Vista中开发和引入的专有软件。</p>
+<p>与OpenVPN一样，SSTP支持AES 256位密钥加密，并使用2048位SSL/TSL证书进行身份验证。该协议同样支持Linux，Windows和BSD系统。而对于Android和iOS等，仅通过第三方客户端提供支持。</p>
+<p>优点：</p>
+<ol>
+<li>高度安全：使用SSL/TLS进行加密。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>
+<p>主要适用于Windows，虽然在Linux上也有实现，在但是其他系统上不如在Windows上表现好。</p>
+</li>
+<li>
+<p>封闭源代码：由微软开发，源代码不公开。</p>
+</li>
+</ol>
+<p>实现原理：</p>
+<p>SSTP在SSL/TLS隧道内封装PPP数据包，使用HTTPS传输数据。通过SSL/TLS提供加密和数据完整性保护。</p>
+<h2 id="ikev2ipsecinternet-key-exchange-version-2ipsec">IKEv2/IPsec（Internet Key Exchange version 2/IPsec）</h2>
+<p>IKEv2是一种提供安全密钥交换会话的隧道协议。该协议是微软和思科合作的成果。与L2TP类似，它通常与IPsec配对使用以提供身份验证和加密功能。</p>
+<p>IKEv2非常适合移动版VPN解决方案。这是因为它可以在任何暂时失去互联网连接的情况下重新连接。其次，它很擅长在网络交换期间重新连接（例如，从移动数据到WiFi网络时）。</p>
+<p>IKEv2不像OpenVPN，PPTP或L2TP/IPsec协议那样受欢迎，但也有很大的VPN市场，特别是那些专注于移动版VPN的公司。因为它是专有软件，所以只支持Windows，iOS和Blackberry。</p>
+<p>优点：</p>
+<ol>
+<li>
+<p>快速重连，特别适用于移动设备，当连接中断后可以迅速恢复。</p>
+</li>
+<li>
+<p>支持各种加密算法</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>
+<p>实现复杂：设置和配置可能较为复杂。</p>
+</li>
+<li>
+<p>支持受限：虽然支持多种平台，但某些旧系统可能不兼容。</p>
+</li>
+<li>
+<p>以上所述的IPsec潜在问题。</p>
+</li>
+<li>
+<p>GFW可以轻松拦截，因为流量特征被吃透了。</p>
+</li>
+</ol>
+<p>实现原理：</p>
+<p>IKEv2用于建立和维护安全关联（SA），IPsec用于加密数据。IKEv2/IPsec通过Diffie-Hellman密钥交换提供密钥管理，通过ESP提供数据加密和认证。</p>
+<h2 id="openvpn">OpenVPN</h2>
+<p>OpenVPN协议于2001年面世，已成为最受欢迎和广泛使用的协议之一，且完全开源。</p>
+<p>OpenVPN使用SSL技术，几乎所有平台都可以使用，包括Windows，Linux，iOS，Android，macOS，Blackberry和路由器。它在第2层和第3层上运行，而且还包含有助于传输IPX数据包和以太网帧的额外功能。此外，它还具有NetBIOS功能，可与HTTPS共享端口443。</p>
+<p>OpenVPN非常安全，因为它使用160位SHA1哈希算法，AES的256位密钥加密以及2048位的RSA身份验证。</p>
+<p>优点：</p>
+<ol>
+<li>
+<p>非常安全，使用SSL/TLS协议进行加密，灵活性高，支持多种加密算法。</p>
+</li>
+<li>
+<p>跨平台支持，支持Windows、macOS、Linux、Android、iOS等。</p>
+</li>
+<li>
+<p>开源，值得信赖。</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>
+<p>配置复杂：需要一定的技术知识来设置和管理。</p>
+</li>
+<li>
+<p>性能依赖硬件：加密强度高时，性能可能受限于硬件。</p>
+</li>
+<li>
+<p>延迟较高</p>
+</li>
+</ol>
+<p>实现原理：</p>
+<p>OpenVPN使用OpenSSL库进行加密，通过UDP或TCP端口传输数据。支持多种加密算法（如AES、Blowfish），可以使用证书、预共享密钥和用户名/密码进行认证。</p>
+<h2 id="wireguard">WireGuard</h2>
+<p>WireGuard是由Jason A. Donenfeld开发的开放源代码VPN程序及协议，基于Linux内核实现，利用Curve25519进行密钥交换，ChaCha20用于加密，Poly1305用于数据认证，BLAKE2用于散列函数运算，支持IPv4和IPv6的第3层，WireGuard旨在获得比IPsec和Open VPN更好的性能。</p>
+<p>优点：</p>
+<ol>
+<li>
+<p>高效和快速：设计简洁，性能优异，适用于对速度要求高的场景。</p>
+</li>
+<li>
+<p>易于配置：配置简单，代码量少，易于审核和维护。</p>
+</li>
+<li>
+<p>高安全性：使用最新的加密技术（如ChaCha20、Poly1305）。</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>基于UDP协议，QoS严重。</li>
+</ol>
+<p>实现原理：</p>
+<p>WireGuard使用UDP协议，通过交换公钥和预共享密钥进行认证和加密。它使用ChaCha20进行加密，Poly1305进行数据认证，并通过Noise协议框架进行密钥协商。</p>
+<h2 id="总结">总结</h2>
+<p>目前流行付费VPN（诸如Express VPN、Nord VPN，非广告），主要使用Open VPN 和WireGuard协议。如果追求速度和安全性兼备的话，那么我更加推荐WireGuard，但众所周知大陆运营商针对UDP流量进行惩罚式的Qos，且最近基于WireGuard协议的Cloudflare WARP/WARP+/Zero Trust全部无法连接，因此安全性请自行斟酌。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[VPN和代理的区别]]></title>
+        <id>https://HappyLeslieAlexander.github.io/post/Differences-Between-VPN-And-Proxy/</id>
+        <link href="https://HappyLeslieAlexander.github.io/post/Differences-Between-VPN-And-Proxy/">
+        </link>
+        <updated>2024-06-16T01:18:27.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2>
+<p>作为一名天朝上国的国民，想要使用Google和Telegram等境外服务需要突破网络审查和封锁，也就是翻墙。大多数人认为翻墙就是使用VPN，其实不然，大多数翻墙人士对VPN和代理之间存在着很大的误解，把它们混为一谈，所以这一期我来出一篇专门介绍VPN和代理的文章。</p>
+<h2 id="vpnvirtual-private-network">VPN（Virtual Private Network）</h2>
+<p>概括： VPN是一种通过公共网络建立私密连接的技术。它通过加密通信，将用户与目标服务器之间的数据传输置于一个安全的加密隧道中，从而确保数据的隐私性和完整性。</p>
+<p>特点：</p>
+<p>全局网络连接： VPN提供全局性的网络连接，可以涵盖整个设备的互联网流量，使其通过安全通道传输。<br>
+地理限制突破： 用户可以通过连接到不同的服务器，绕过地理位置限制，访问受限内容。<br>
+加密通信： 使用各种加密协议确保数据在传输中得到保护。<br>
+用途：常用于内网穿透、隐藏IP、翻墙</p>
+<p>使用的协议：</p>
+<p>PPTP（Point-to-Point Tunneling Protocol）、L2TP/IPsec（Layer 2 Tunneling Protocol over IPsec）、OpenVPN、IKEv2（Internet Key Exchange version 2）、SSTP（Secure Socket Tunneling Protocol）、WireGuard等。</p>
+<h2 id="代理proxy">代理（Proxy）</h2>
+<p>特点：</p>
+<p>加速访问： 代理服务器通过缓存和本地数据传输，提高用户访问速度。<br>
+访问控制： 可通过代理设置访问控制，限制或允许特定请求。<br>
+简便配置： 代理通常配置较为简单，适用于特定应用或服务的连接。<br>
+隐藏真实IP： 用户请求通过代理服务器，隐藏了用户的真实IP地址。<br>
+用途：常用于隐藏IP、翻墙</p>
+<p>使用的协议：</p>
+<p>HTTP、HTTPS（HTTP Over TLS）、SOCKS（SOCKS4、SOCKS5）等。<br>
+分析<br>
+传统定义上的VPN需要满足两个条件：数据加密、使用公有协议（上文列举出来的）</p>
+<p>传统意义上的代理只需要满足一个条件：使用公有协议（上文列举出来的），而对加不加密没有特别的要求，可以加密可以不加密，加密就用TLS。也以设置用户名和密码等认证信息（认证不等于加密，认证成功后你传输的数据依然是明文）</p>
+<p>我们目前所使用的翻墙工具，无外乎就分为三种类型，一类是某某加速器和某某VPN，这类属于传统意义上的VPN，它们使用的协议也是传统的VPN的协议，同时也进行了加密，所以它们毫无争议地被定义为VPN</p>
+<p>一类是“机场”节点，需要搭配Clash或者V2Ray等代理工具使用，这些节点也进行了加密，但是却既没有使用VPN的公有协议，也没有使用代理的共有协议，这些节点使用的是专门为翻墙而生的协议，常见的有Shadowsocks、VMess、VLESS、Trojan等协议，这些协议也是开源的。因此我们很难定义节点到底属于VPN还是属于代理。</p>
+<p>那么这样写文章就无限循环了</p>
+<h2 id="怎么可能正文开始">怎么可能，正文开始</h2>
+<p>以下内容涉及专业知识，小白可能看不懂</p>
+<p>我们提到VPN还有一个比较大的用途--内网穿透，比如电脑A、B在同一个局域网，电脑A运行了VPN服务器，电脑B运行了SAMBA文件共享服务，电脑C和电脑A、B不在一个局域网，但是我们可以让电脑C连接上电脑A运行的VPN，然后获得一个内网地址，这样就可以穿透NAT访问电脑B的SAMBA共享的文件了。而代理只会转发你的流量，不能够让你访问到VPN运行的内网。</p>
+<p>此外，VPN包含完整的三层数据包（网络层、传输层、会议层-会话层），例如你访问谷歌，你的VPN客户端生成一份请求谷歌的完整数据，但并没有发给谷歌，而是发给了VPN服务器。代理则不是这样，还是假如你访问谷歌，你的代理客户端发送的数据为请求代理服务器访问谷歌，并没有生成请求谷歌的完整数据，请求谷歌的完整数据由代理服务器生成和发送。这是VPN和代理的一个显著区别。</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/OSI.png" alt="" loading="lazy"></figure>
+<p>** 总而言之，VPN相当于把VPN服务器的网络拿了过来用，而代理服务器只是帮你转发数据 **</p>
+<p>结论<br>
+如Cloudflare提供的WARP、ProtonVPN、老王VPN等程序提供的是VPN，而我们所有的所有机场节点都是代理</p>
+<p>Tips：这期内容干货满满，网上至今还没有对于VPN和代理的明确区分，希望这期文章能帮到更多小白，不要再把VPN和代理混为一谈了</p>
+]]></content>
+    </entry>
+</feed>

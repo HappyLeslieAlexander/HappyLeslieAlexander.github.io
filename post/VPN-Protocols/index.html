@@ -1,0 +1,483 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>浅谈VPN协议 | Leslie Alexander的博客</title>
+<link rel="stylesheet" href="https://HappyLeslieAlexander.github.io/styles/main.css">
+<script src="https://HappyLeslieAlexander.github.io/media/script.js"></script>
+
+    
+
+  <meta name="description" content="前言
+VPN协议不断迭代更新，协议千千万，究竟哪种协议安全且传输速度快呢？今天浅谈各个VPN协议。
+PPTP（Point-to-Point Tunneling Protocol）
+端对端隧道协议是第一个VPN协议，它已有20多年的历史。该协...">
+  <script src="https://HappyLeslieAlexander.github.io/media/prism.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+  <div class="antialiased">
+    <div class="max-w-5xl mx-auto px-6 md:px-8">
+      <div class="flex justify-between items-center mt-10">
+  <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-900 font-medium md:font-normal leading-none">
+    <a href="https://HappyLeslieAlexander.github.io">Leslie Alexander的博客</a>
+  </h1>
+  <div class="block lg:hidden" id="thumb-menu">
+    <button id="thumb-open" type="button" class="block">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6H22V7H2V6ZM2 12H22V13H2V12ZM22 18H2V19H22V18Z" class="fill-current text-gray-900"></path></svg>
+    </button>
+    <button id="thumb-close" type="button" class="hidden">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4L20 20M20 4L4 20" class="" stroke="#1A202C"></path></svg>
+    </button>
+  </div>
+</div>
+<div id="nav-list" class="lg:block hidden">
+  <div class="w-full block lg:flex lg:justify-between lg:border-b lg:border-gray-400 mt-10 text-gray-700 font-medium lg:text-lg">
+    <div class="lg:flex -mb-px">
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io" class="nav-link">首页</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/aboutme" class="nav-link">关于</a>
+        
+      
+        
+          <a href="https://github.com/HappyLeslieAlexander" class="nav-link" target="_blank">GitHub</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/tags" class="nav-link">标签</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/archives" class="nav-link">归档</a>
+        
+      
+        
+          <a href="https://t.me/Depressed_LeslieAlexander" class="nav-link" target="_blank">Telegram</a>
+        
+      
+        
+          <a href="https://t.me/s/LeslieDiary" class="nav-link" target="_blank">Telegram 频道</a>
+        
+      
+        
+          <a href="https://t.me/LeslieGroup" class="nav-link" target="_blank">Telegram 群组</a>
+        
+      
+        
+          <a href="https://leslie-links.vercel.app/" class="nav-link" target="_blank">友情链接</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/donate" class="nav-link">捐赠</a>
+        
+      
+    </div>
+    <div class="lg:flex">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+      <a href="https://HappyLeslieAlexander.github.io/atom.xml" class="block mt-6 lg:mt-0 lg:ml-8 flex align-center hover:text-gray-900" target="_blank">
+        <div>RSS</div>
+        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="ml-1 -mt-px"><path d="M16.5 13V18.5H6.5V8.5H12" stroke="#4A5568"></path> <path d="M10 15L18.5 6.5" stroke="#4A5568"></path> <path d="M14 6.5H18.5V11" stroke="#4A5568"></path></svg>
+      </a>
+    </div>
+  </div>
+</div>
+      <div class="mb-20 md:flex mt-10 lg:mt-6 md:border-t md:border-gray-400 md:pt-2 lg:border-t-0 lg:pt-0">
+        <div class="w-full md:w-2/3 mt-6">
+          <h1 class="text-4xl">浅谈VPN协议</h1>
+          
+            <img class="max-w-full mt-6 rounded-sm" src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/VPN%20Protocols.jpg" alt="">
+          
+          <div class="mt-6 lg:mt-10 post-content">
+            <h2 id="前言">前言</h2>
+<p>VPN协议不断迭代更新，协议千千万，究竟哪种协议安全且传输速度快呢？今天浅谈各个VPN协议。</p>
+<h2 id="pptppoint-to-point-tunneling-protocol">PPTP（Point-to-Point Tunneling Protocol）</h2>
+<p>端对端隧道协议是第一个VPN协议，它已有20多年的历史。该协议依赖于加密，认证和端对端协议（PPP）进行协商。实质上，它只需要用户名，密码和服务器地址就可创建连接。</p>
+<p>大多数设备都支持PPTP，因为设置起来非常简单，在VPN公司中也很受欢迎。PPTP非常快，因此，想要规避网络中地理限制的人更喜欢该协议。</p>
+<p>但是，速度是以弱加密性为代价的。在所有协议中，PPTP加密级别最低。甚至微软也建议人们远离PPTP，从安全的角度来看，PPTP是完全不合格的。</p>
+<p>功能：</p>
+<ol>
+<li>
+<p>路线推送：该功能可自动为用户端提供远程网络中的路由信息，使其能够使用内网资源。</p>
+</li>
+<li>
+<p>TCP 和 UDP 支持： PPTP VPN 协议支持 TCP 和 UDP 流量传输，因此在传输各种类型的数据时用途广泛。</p>
+</li>
+<li>
+<p>推送 DNS 服务器： PPTP 可以自动为客户机分配 DNS 服务器，从而简化设置过程，并确保正确、安全的名称解析，尤其是对本机域内的名称。</p>
+</li>
+<li>
+<p>使用身份提供商： PPTP 在与目录服务集成方面非常灵活。Windows 中的 PPTP VPN 服务器与 Active Directory（Microsoft 的另一个产品）集成得很好，并为 RADIUS 提供良好的支持。由于 Active Directory 的功能，PPTP VPN 服务器可以与 LDAP 集成，允许使用现有的用户数据库及其帐户进行 VPN 访问。</p>
+</li>
+<li>
+<p>加密算法的使用：PPTP 主要使用 MS-CHAP v2 身份验证系统和基于流密码 RC4 的 MPPE 加密算法。</p>
+</li>
+</ol>
+<p>优点：</p>
+<ol>
+<li>
+<p>由于 PPTP 协议是由 Microsoft 开发的，因此它能很好地与 Windows 系统和其他Microsoft 软件解决方案集成整合。这就为使用 Windows 计算机的大公司提供了极大的便利。</p>
+</li>
+<li>
+<p>速度快：由于较低的加密强度，传输速度较快。</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>
+<p>PPTP 协议目前的主要缺点是存在的安全漏洞。“中间人攻击”（Man-in-the-middle attack）会破坏通过 PPTP 隧道的流量。</p>
+</li>
+<li>
+<p>PPTP 使用的标准加密基于 MPPE，MPPE使用RC4流密码进行加密。没有对密文流进行认证的方法，因此密文很容易受到比特翻转攻击。攻击者可以在传输过程中修改流并调整单比特来改变输出流而不被检测到。这些位翻转可能会被协议本身通过校验和或其他方式检测到。</p>
+</li>
+<li>
+<p>MS-CHAP-v1是不安全的，因为已有工具可以从捕获到的MSCHAP-v1交换包中轻易地提取出NT密码的哈希值。当使用MS-CHAP-v1时，MPPE在通信流的两个方向上使用相同的RC4会话密钥进行加密。这可以通过将每个方向的数据流一起进行异或运算，用标准方法进行密文分析。MS-CHAP-v2对捕获的挑战响应（challenge response）数据包容易受到字典攻击。目前已有工具可以快速执行这一过程。2012年，有研究表明，对MS-CHAP-v2密钥进行暴力攻击的复杂性相当于对单个DES密钥进行暴力攻击。还演示了一项在线服务，它能够在23小时内解密MS-CHAP-v2 MD4口令。</p>
+</li>
+<li>
+<p>EAP-TLS被认为是PPTP的高级认证选择。然而，它需要为用户和服务器证书实现公钥基础设施。因此，对于一些远程访问的设备来说，它可能不是一个可行的认证选择。</p>
+</li>
+<li>
+<p>GFW可以轻松拦截，因为流量特征被吃透了。</p>
+</li>
+</ol>
+<p>实现原理：</p>
+<p>PPTP 是第一个被 Microsoft 拨号网络支持的 VPN 通信协议。自 Windows 95 OSR2 起，所有的 Microsoft Windows 版本都内置了 PPTP 客户端软件（虽然只能支持最多两个同时对外的连线）。 在 Mobile 版本上，Microsoft Windows Mobile 2003 与更新的版本也支持 PPTP。Windows 的路由及远程访问包有包含 PPTP 服务器。 Microsoft 的实现在 MS-CHAP 认证协议内使用了单次 DES 加密，但单次 DES 常被认为无法提供资料足够等级的安全防护。</p>
+<p>Windows Vista 与更新版本的 PPTP 开始支持 PEAP。认证机制有 PEAPv0 / EAP-MSCHAPv2 (使用密码) 还有 PEAP-TLS (智能卡与证书)。 Windows Vista 同时停止了 MSCHAP-v1 的认证协议。</p>
+<p>Linux 的 PPTP 服务器一般是使用 PoPToP包加上 PPP 与 MPPE 的 Kernel Module。PPTP的客户端程序从 1997就开始提供了，但服务器部分要等到 Matthew Ramsay 在 1999[6]开发的版本从 Moreton Bay 以 GNU GPL 发行后才真正开始有人大量使用。但是，Linux发行版本一开始通常都不包含 MPPE 的部分（因为担心有专利问题）所以不完整，直到 2005/10/28 发布的 Linux Kernel 2.6.14 才正式支持 MPPE。 SuSE Linux 10 是第一个有完整可用的 PPTP 客户端程序的版本。另外还有 ACCEL-PPP 包: 它提供了 PPTP / L2TP / PPPoE 服务器，可提供 kernel 模式的 PPTP 协议。</p>
+<p>OpenBSD 跟 FreeBSD 在 &quot;ports&quot; 包系统里提供 PoPToP。 macOS 与 iOS 曾提供内置 PPTP 客户端程序，但在 2016 年发表的 iOS 10 和 macOS Sierra 中，PPTP 支持被移除。 OS X Server 内置了 PPTP 服务。 Cisco 与 Efficient Networks 有另外贩卖给旧版 Mac OS 使用的 PPTP 客户端程序。 许多 Android 智能手机也支持 PPTP，不过官方版本的 Android 12 已移除了PPTP功能。</p>
+<h2 id="l2tpipseclayer-2-tunneling-protocolinternet-protocol-security">L2TP/IPsec（Layer 2 Tunneling Protocol/Internet Protocol Security）</h2>
+<p>要完全理解2层隧道协议（L2TP），首先要提到2层转发（L2F）。在PPTP发布后不久，思科就开发了L2F，试图改进PPTP的缺陷。但不幸的是，L2F也不完美。</p>
+<p>此后，他们在1999年发布了L2TP作为对PPTP和L2F的改进。L2TP结合了L2F和PPTP的优点，提供了更安全可靠的隧道协议。</p>
+<p>但请注意，L2TP只是一种隧道协议，既不提供加密也不保证隐私。由于缺乏加密，L2TP不能单独作为安全协议使用，必须与IPsec配对，IPsec是一种带有加密功能的安全协议。L2TP和IPsec协议的组合使用带来一种双封装的概念。</p>
+<p>在双封装中，第一个封装将创建客户端到远程主机的PPP连接，第二个封装将使用IPsec。</p>
+<p>L2TP支持AES 256加密算法——可以说是最安全的——它可以防止中间人攻击。</p>
+<p>请记住，由于双重封装，协议的速度较慢。此外，L2TP协议只能通过UDP协议进行通信。一旦UDP协议受到限制，会极大影响L2TP。</p>
+<p>优点：</p>
+<ol>
+<li>
+<p>较为安全</p>
+</li>
+<li>
+<p>支持多种平台，几乎所有现代操作系统都支持L2TP/IPsec。</p>
+</li>
+<li>
+<p>支持多线程</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>
+<p>较复杂的设置：需要额外的配置，特别是在防火墙和路由器上。</p>
+</li>
+<li>
+<p>性能可能稍差：由于双重封装（L2TP和IPsec），性能可能受到影响。</p>
+</li>
+<li>
+<p>Edward Snowden和John Gilmore都指出，NSA也许能攻破IPSec的保护</p>
+</li>
+<li>
+<p>GFW可以轻松拦截，因为流量特征被吃透了。</p>
+</li>
+</ol>
+<p>实现原理：</p>
+<p>L2TP创建隧道，IPsec提供加密和认证。L2TP本身不提供加密，通常结合IPsec使用。IPsec使用ESP（Encapsulating Security Payload）和AH（Authentication Header）提供数据加密和认证。</p>
+<h2 id="sstpsecure-socket-tunneling-protocol">SSTP（Secure Socket Tunneling Protocol）</h2>
+<p>安全套接字隧道协议（SSTP）与OpenVPN非常相似，唯一的区别在于它是Microsoft在Windows Vista中开发和引入的专有软件。</p>
+<p>与OpenVPN一样，SSTP支持AES 256位密钥加密，并使用2048位SSL/TSL证书进行身份验证。该协议同样支持Linux，Windows和BSD系统。而对于Android和iOS等，仅通过第三方客户端提供支持。</p>
+<p>优点：</p>
+<ol>
+<li>高度安全：使用SSL/TLS进行加密。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>
+<p>主要适用于Windows，虽然在Linux上也有实现，在但是其他系统上不如在Windows上表现好。</p>
+</li>
+<li>
+<p>封闭源代码：由微软开发，源代码不公开。</p>
+</li>
+</ol>
+<p>实现原理：</p>
+<p>SSTP在SSL/TLS隧道内封装PPP数据包，使用HTTPS传输数据。通过SSL/TLS提供加密和数据完整性保护。</p>
+<h2 id="ikev2ipsecinternet-key-exchange-version-2ipsec">IKEv2/IPsec（Internet Key Exchange version 2/IPsec）</h2>
+<p>IKEv2是一种提供安全密钥交换会话的隧道协议。该协议是微软和思科合作的成果。与L2TP类似，它通常与IPsec配对使用以提供身份验证和加密功能。</p>
+<p>IKEv2非常适合移动版VPN解决方案。这是因为它可以在任何暂时失去互联网连接的情况下重新连接。其次，它很擅长在网络交换期间重新连接（例如，从移动数据到WiFi网络时）。</p>
+<p>IKEv2不像OpenVPN，PPTP或L2TP/IPsec协议那样受欢迎，但也有很大的VPN市场，特别是那些专注于移动版VPN的公司。因为它是专有软件，所以只支持Windows，iOS和Blackberry。</p>
+<p>优点：</p>
+<ol>
+<li>
+<p>快速重连，特别适用于移动设备，当连接中断后可以迅速恢复。</p>
+</li>
+<li>
+<p>支持各种加密算法</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>
+<p>实现复杂：设置和配置可能较为复杂。</p>
+</li>
+<li>
+<p>支持受限：虽然支持多种平台，但某些旧系统可能不兼容。</p>
+</li>
+<li>
+<p>以上所述的IPsec潜在问题。</p>
+</li>
+<li>
+<p>GFW可以轻松拦截，因为流量特征被吃透了。</p>
+</li>
+</ol>
+<p>实现原理：</p>
+<p>IKEv2用于建立和维护安全关联（SA），IPsec用于加密数据。IKEv2/IPsec通过Diffie-Hellman密钥交换提供密钥管理，通过ESP提供数据加密和认证。</p>
+<h2 id="openvpn">OpenVPN</h2>
+<p>OpenVPN协议于2001年面世，已成为最受欢迎和广泛使用的协议之一，且完全开源。</p>
+<p>OpenVPN使用SSL技术，几乎所有平台都可以使用，包括Windows，Linux，iOS，Android，macOS，Blackberry和路由器。它在第2层和第3层上运行，而且还包含有助于传输IPX数据包和以太网帧的额外功能。此外，它还具有NetBIOS功能，可与HTTPS共享端口443。</p>
+<p>OpenVPN非常安全，因为它使用160位SHA1哈希算法，AES的256位密钥加密以及2048位的RSA身份验证。</p>
+<p>优点：</p>
+<ol>
+<li>
+<p>非常安全，使用SSL/TLS协议进行加密，灵活性高，支持多种加密算法。</p>
+</li>
+<li>
+<p>跨平台支持，支持Windows、macOS、Linux、Android、iOS等。</p>
+</li>
+<li>
+<p>开源，值得信赖。</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>
+<p>配置复杂：需要一定的技术知识来设置和管理。</p>
+</li>
+<li>
+<p>性能依赖硬件：加密强度高时，性能可能受限于硬件。</p>
+</li>
+<li>
+<p>延迟较高</p>
+</li>
+</ol>
+<p>实现原理：</p>
+<p>OpenVPN使用OpenSSL库进行加密，通过UDP或TCP端口传输数据。支持多种加密算法（如AES、Blowfish），可以使用证书、预共享密钥和用户名/密码进行认证。</p>
+<h2 id="wireguard">WireGuard</h2>
+<p>WireGuard是由Jason A. Donenfeld开发的开放源代码VPN程序及协议，基于Linux内核实现，利用Curve25519进行密钥交换，ChaCha20用于加密，Poly1305用于数据认证，BLAKE2用于散列函数运算，支持IPv4和IPv6的第3层，WireGuard旨在获得比IPsec和Open VPN更好的性能。</p>
+<p>优点：</p>
+<ol>
+<li>
+<p>高效和快速：设计简洁，性能优异，适用于对速度要求高的场景。</p>
+</li>
+<li>
+<p>易于配置：配置简单，代码量少，易于审核和维护。</p>
+</li>
+<li>
+<p>高安全性：使用最新的加密技术（如ChaCha20、Poly1305）。</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>基于UDP协议，QoS严重。</li>
+</ol>
+<p>实现原理：</p>
+<p>WireGuard使用UDP协议，通过交换公钥和预共享密钥进行认证和加密。它使用ChaCha20进行加密，Poly1305进行数据认证，并通过Noise协议框架进行密钥协商。</p>
+<h2 id="总结">总结</h2>
+<p>目前流行付费VPN（诸如Express VPN、Nord VPN，非广告），主要使用Open VPN 和WireGuard协议。如果追求速度和安全性兼备的话，那么我更加推荐WireGuard，但众所周知大陆运营商针对UDP流量进行惩罚式的Qos，且最近基于WireGuard协议的Cloudflare WARP/WARP+/Zero Trust全部无法连接，因此安全性请自行斟酌。</p>
+
+          </div>
+          
+            
+              <div class="mt-6">
+                <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'e00b7b0fe8f2446bfcdb',
+    clientSecret: '47c98b216b9a1e3fb82f0c45e697fe05b10cf218',
+    repo: 'HappyLeslieAlexander.github.io',
+    owner: 'HappyLeslieAlexander',
+    admin: ['HappyLeslieAlexander'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+              </div>
+            
+  
+            
+          
+        </div>
+        
+          <div class="w-full md:w-1/3">
+            <div class="mt-6 md:pl-8">
+              <h4 class="text-base font-thin text-gray-700 mb-2">发布时间</h4>
+              <div class="text-lg mb-6">2024-06-17</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">标签</h4>
+              <div class="mb-6">
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/VPN/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">VPN</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/Security/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">Security</a>
+                
+              </div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">阅读时间</h4>
+              <div class="text-lg mb-6">12 min read</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">相关阅读</h4>
+              <div class="border-b border-gray-400">
+                
+
+  
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Tor-Proxy/" class="text-lg hover:underline my-2 inline-block">洋葱路由（Tor）的高级用法</a>
+        </div>
+      
+    
+  
+
+  
+
+  
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Differences-Between-VPN-And-Proxy/" class="text-lg hover:underline my-2 inline-block">VPN和代理的区别</a>
+        </div>
+      
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Differences-Between-VPN-And-Proxy/" class="text-lg hover:underline my-2 inline-block">VPN和代理的区别</a>
+        </div>
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+  
+
+
+              </div>
+            </div>
+          </div>
+        
+      </div>
+      <div class="footer border-gray-400 border-t pt-6 mt-6 sm:mt-8 md:mt-10 mb-20 text-gray-700 text-sm sm:text-base lg:text-lg">
+  本网页使用MarkDown语言进行编写，托管于GitHub Pages。 <br />
+<a href="https://icp.gov.moe/?keyword=20230638" target="_blank"><img style="height:16px;" src="https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230638%E5%8F%B7-ef82a0?labelColor=51c4d3%22%20data-lazy-src=%22https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230317%E5%8F%B7-ef82a0?labelColor=51c4d3" alt="萌ICP备20230638号" data-ll-status="loaded" class="entered loaded"></a> <br />
+<a href="https://guan.ma/hao/2024000123/" title="官码2024000123号"><img src="https://style.wmou.com/images/guanma.png" alt="官码" width="20">官码2024000123号</a> <br />
+本网站使用CloudFlare CDN进行保护和加速。
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudflare.webp" width="80px" height="16px" alt="CloudFlare"> <br />
+</div>
+    </div>
+  </div>
+  <script>
+    Prism.highlightAll()
+  </script>
+</body>
+</html>

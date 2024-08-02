@@ -1,0 +1,412 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>域前置--搭建永不被墙的节点--复活已经被墙的节点 | Leslie Alexander的博客</title>
+<link rel="stylesheet" href="https://HappyLeslieAlexander.github.io/styles/main.css">
+<script src="https://HappyLeslieAlexander.github.io/media/script.js"></script>
+
+    
+
+  <meta name="description" content="前言
+
+
+域前置（英语：Domain fronting），是一种隐藏连接真实端点来规避互联网审查的技术。在应用层上运作时，域前置使用户能通过HTTPS连接到被屏蔽的服务，而表面上像在与另一个完全不同的站点通信。
+
+
+
+
+此技术的原理为在不同...">
+  <script src="https://HappyLeslieAlexander.github.io/media/prism.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+  <div class="antialiased">
+    <div class="max-w-5xl mx-auto px-6 md:px-8">
+      <div class="flex justify-between items-center mt-10">
+  <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-900 font-medium md:font-normal leading-none">
+    <a href="https://HappyLeslieAlexander.github.io">Leslie Alexander的博客</a>
+  </h1>
+  <div class="block lg:hidden" id="thumb-menu">
+    <button id="thumb-open" type="button" class="block">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6H22V7H2V6ZM2 12H22V13H2V12ZM22 18H2V19H22V18Z" class="fill-current text-gray-900"></path></svg>
+    </button>
+    <button id="thumb-close" type="button" class="hidden">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4L20 20M20 4L4 20" class="" stroke="#1A202C"></path></svg>
+    </button>
+  </div>
+</div>
+<div id="nav-list" class="lg:block hidden">
+  <div class="w-full block lg:flex lg:justify-between lg:border-b lg:border-gray-400 mt-10 text-gray-700 font-medium lg:text-lg">
+    <div class="lg:flex -mb-px">
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io" class="nav-link">首页</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/aboutme" class="nav-link">关于</a>
+        
+      
+        
+          <a href="https://github.com/HappyLeslieAlexander" class="nav-link" target="_blank">GitHub</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/tags" class="nav-link">标签</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/archives" class="nav-link">归档</a>
+        
+      
+        
+          <a href="https://t.me/Depressed_LeslieAlexander" class="nav-link" target="_blank">Telegram</a>
+        
+      
+        
+          <a href="https://t.me/s/LeslieDiary" class="nav-link" target="_blank">Telegram 频道</a>
+        
+      
+        
+          <a href="https://t.me/LeslieGroup" class="nav-link" target="_blank">Telegram 群组</a>
+        
+      
+        
+          <a href="https://leslie-links.vercel.app/" class="nav-link" target="_blank">友情链接</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/donate" class="nav-link">捐赠</a>
+        
+      
+    </div>
+    <div class="lg:flex">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+      <a href="https://HappyLeslieAlexander.github.io/atom.xml" class="block mt-6 lg:mt-0 lg:ml-8 flex align-center hover:text-gray-900" target="_blank">
+        <div>RSS</div>
+        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="ml-1 -mt-px"><path d="M16.5 13V18.5H6.5V8.5H12" stroke="#4A5568"></path> <path d="M10 15L18.5 6.5" stroke="#4A5568"></path> <path d="M14 6.5H18.5V11" stroke="#4A5568"></path></svg>
+      </a>
+    </div>
+  </div>
+</div>
+      <div class="mb-20 md:flex mt-10 lg:mt-6 md:border-t md:border-gray-400 md:pt-2 lg:border-t-0 lg:pt-0">
+        <div class="w-full md:w-2/3 mt-6">
+          <h1 class="text-4xl">域前置--搭建永不被墙的节点--复活已经被墙的节点</h1>
+          
+            <img class="max-w-full mt-6 rounded-sm" src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Domain%20Fronting.png" alt="">
+          
+          <div class="mt-6 lg:mt-10 post-content">
+            <h2 id="前言">前言</h2>
+<blockquote>
+<blockquote>
+<p>域前置（英语：Domain fronting），是一种隐藏连接真实端点来规避互联网审查的技术。在应用层上运作时，域前置使用户能通过HTTPS连接到被屏蔽的服务，而表面上像在与另一个完全不同的站点通信。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>此技术的原理为在不同通信层使用不同的域名。在明文的DNS请求和TLS服务器名称指示（SNI）中使用无害的域名来初始化连接、公布给审查者，而实际要连接的“敏感”域名仅在建立加密的HTTPS连接后发出，使其不以明文暴露给网络审查者。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>这种举动在被封锁的站点与无害站点为同一个大型服务提供商时较为可行，例如由内容分发网络提供的服务。此时审查者通常很难区分被伪装流量与合法流量的特点，迫使审查者选择放行所有看似无害的流量，或者选择彻底封锁此域的流量。而彻底封锁可能带来显著的附加损害。--维基百科</p>
+</blockquote>
+</blockquote>
+<p>Tor提供一种用来规避审查的网桥叫做meek，其本质是使用了域前置技术。什么是域前置技术？简单来说，我要访问已经被封锁的A网站，我伪造A网站请求，使审查者认为我在访问没有被封锁的B网站，从而放行我的流量。由于域前置可以偷跑别人域名的流量和证书，大多数CDN提供商都停止了对域前置的支持，目前仍支持域前置的还有Fastly、Gcore、Azure。</p>
+<p>域前置只要求使用CDN和TLS加密，因此，域前置可以用来避免节点被GFW封锁或复活已经被封禁的GFW节点。本期博客以EdgeTunnel（Cloudflare VLESS WebSocket TLS）节点和Fastly的CDN为例。</p>
+<h2 id="配置域前置">配置域前置</h2>
+<p>以下是一个配置好的标准的EdgeTunnel节点，经过测试可以正常使用：</p>
+<pre><code>vless://8820e16b-fbc2-49d3-90e4-eeeb8301c83c@www.visa.com.hk:443?security=tls&amp;sni=vless.leslieblog.buzz&amp;fp=randomized&amp;type=ws&amp;path=/?ed%3D2560&amp;host=vless.leslieblog.buzz&amp;encryption=none#Leslie-Workers/Pages-TLS
+</code></pre>
+<p>配置如图所示：<br>
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/EdgeTunnel.png" alt="" loading="lazy"></p>
+<p>打开Fastly官网：https://www.fastly.com/ ，注册账号并登录</p>
+<p>找到左侧CDN-CDN Services-Create Service-CDN</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly01.png" alt="" loading="lazy"></figure>
+<p>服务名随意，own domain-Domain随意填，这将是你的WebSocket主机，不一定要是你的域名，比如这里我填写nmsl.hk，origin-Host填写你的节点IP或者域名，我这里填写 vless.leslieblog.buzz，点击下方的Activate激活CDN服务</p>
+<p>激活后点击右上方的 Edit configuration-Clone version 1 (active) to edit</p>
+<p>** 注意，以下内容非常关键 **</p>
+<ol>
+<li>配置回源</li>
+</ol>
+<p>点击左侧的Hosts，在右侧点击你的源域名</p>
+<figure data-type="image" tabindex="2"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly03.png" alt="" loading="lazy"></figure>
+<p>在Enable TLS的区域配置回源TLS和端口：比如我演示的这个EdgeTunnel节点启用了TLS，使用443端口，我就选择Yes, enable TLS and connect securely using port，并输入443。依据你要套域前置的节点配置来更改，改好后划到最下方Update</p>
+<figure data-type="image" tabindex="3"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly07.png" alt="" loading="lazy"></figure>
+<ol>
+<li>配置WebSocket</li>
+</ol>
+<p>在左侧找到WebSockets</p>
+<figure data-type="image" tabindex="4"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly04.png" alt="" loading="lazy"></figure>
+<p>点击Free Trial试用（没错，Fastly家的WebSocket不是免费的，只能试用三十天，但是据测试30天后已经启用WebSocket的服务依然可以正常使用），打开WebSockets</p>
+<figure data-type="image" tabindex="5"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly05.png" alt="" loading="lazy"></figure>
+<p>在左侧找到VLC snippets</p>
+<figure data-type="image" tabindex="6"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly06.png" alt="" loading="lazy"></figure>
+<p>在右侧点击Create your first VCL snippet，Name填写 ws<br>
+VLC代码如下：</p>
+<pre><code>if (req.http.Upgrade) {
+    return (upgrade);
+}
+</code></pre>
+<p>点击下方的Create创建</p>
+<p>至此配置完成，点击右上角的Activate激活配置</p>
+<figure data-type="image" tabindex="7"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly08.png" alt="" loading="lazy"></figure>
+<h2 id="配置节点">配置节点</h2>
+<p>下面将套了域前置的节点导入代理工具：</p>
+<p>我以NekoRay为例：</p>
+<ol>
+<li>
+<p>将地址改为任意使用了Fastly的网站或Fastly的CDN IP（我使用www.gov.uk）</p>
+</li>
+<li>
+<p>启用TLS，端口改为443</p>
+</li>
+<li>
+<p>ws设置中的Host改为刚刚设置的nmsl.hk</p>
+</li>
+<li>
+<p>TLS安全设置的SNI改为地址中填写的域名（如果你用的IP作为地址，则填写任意使用了Fastly CDN的域名，比如www.gov.uk，并启用不检查服务器证书）</p>
+</li>
+</ol>
+<figure data-type="image" tabindex="8"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Fastly09.png" alt="" loading="lazy"></figure>
+<p>保存，经测试，有真连接延迟，可以正常使用</p>
+<h2 id="回顾">回顾</h2>
+<p>本期博客讲述的域前置实现节点不被墙和复活已经被墙节点的原理是偷了白名单域名的SNI（比如我偷的www.gov.uk），绕过GFW检测。</p>
+<p>但这种方法的滥用很可能导致Fastly的IP段被大面积封禁，因此出这期教程时我是很纠结的，我不希望Fastly再被滥用得像Cloudflare CDN一样。</p>
+<p>最后讲一下域前置的适用节点配置和注意事项：</p>
+<p>支持节点配置：<br>
+VMess+WebSocket<br>
+VMess+Websocket+TLS<br>
+Vless+WebSocket<br>
+Vless+Websocket+TLS<br>
+Trojan+WebSocket<br>
+Trojan+WebSocket+TLS</p>
+<p>注意事项：</p>
+<ol>
+<li>由于需要Fastly的CDN中转流量，因此只能用WebSocket作为传输协议</li>
+<li>不要使用优选Fastly CDN IP+WebSocket的配置，没有TLS加密不能起到域前置伪装的作用，而且容易把Fastly的IP送GFW</li>
+<li>使用域前置注定不会快，此方法仅当作防止在敏感时期失联的备用紧急方法</li>
+<li>滥用可耻</li>
+</ol>
+
+          </div>
+          
+            
+              <div class="mt-6">
+                <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'e00b7b0fe8f2446bfcdb',
+    clientSecret: '47c98b216b9a1e3fb82f0c45e697fe05b10cf218',
+    repo: 'HappyLeslieAlexander.github.io',
+    owner: 'HappyLeslieAlexander',
+    admin: ['HappyLeslieAlexander'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+              </div>
+            
+  
+            
+          
+        </div>
+        
+          <div class="w-full md:w-1/3">
+            <div class="mt-6 md:pl-8">
+              <h4 class="text-base font-thin text-gray-700 mb-2">发布时间</h4>
+              <div class="text-lg mb-6">2024-07-03</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">标签</h4>
+              <div class="mb-6">
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/cdn/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">CDN</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/EdgeTunnel/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">EdgeTunnel</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/Proxy/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">Proxy</a>
+                
+              </div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">阅读时间</h4>
+              <div class="text-lg mb-6">5 min read</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">相关阅读</h4>
+              <div class="border-b border-gray-400">
+                
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Refresh-JSDELIVR-CDN/" class="text-lg hover:underline my-2 inline-block">刷新cdn.jsdelivr.net缓存内容</a>
+        </div>
+      
+    
+      
+    
+      
+    
+  
+
+  
+
+  
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Solve-Cloudns-Free-Domain-Issues/" class="text-lg hover:underline my-2 inline-block">解决免费域名ClouDNS的一些问题</a>
+        </div>
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/PicGo-GitHub-Image-Hosting/" class="text-lg hover:underline my-2 inline-block">使用PicGo+GitHub搭建免费图床</a>
+        </div>
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+              </div>
+            </div>
+          </div>
+        
+      </div>
+      <div class="footer border-gray-400 border-t pt-6 mt-6 sm:mt-8 md:mt-10 mb-20 text-gray-700 text-sm sm:text-base lg:text-lg">
+  本网页使用MarkDown语言进行编写，托管于GitHub Pages。 <br />
+<a href="https://icp.gov.moe/?keyword=20230638" target="_blank"><img style="height:16px;" src="https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230638%E5%8F%B7-ef82a0?labelColor=51c4d3%22%20data-lazy-src=%22https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230317%E5%8F%B7-ef82a0?labelColor=51c4d3" alt="萌ICP备20230638号" data-ll-status="loaded" class="entered loaded"></a> <br />
+<a href="https://guan.ma/hao/2024000123/" title="官码2024000123号"><img src="https://style.wmou.com/images/guanma.png" alt="官码" width="20">官码2024000123号</a> <br />
+本网站使用CloudFlare CDN进行保护和加速。
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudflare.webp" width="80px" height="16px" alt="CloudFlare"> <br />
+</div>
+    </div>
+  </div>
+  <script>
+    Prism.highlightAll()
+  </script>
+</body>
+</html>

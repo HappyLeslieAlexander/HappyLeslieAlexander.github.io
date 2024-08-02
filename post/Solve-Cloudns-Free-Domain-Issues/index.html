@@ -1,0 +1,359 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>解决免费域名ClouDNS的一些问题 | Leslie Alexander的博客</title>
+<link rel="stylesheet" href="https://HappyLeslieAlexander.github.io/styles/main.css">
+<script src="https://HappyLeslieAlexander.github.io/media/script.js"></script>
+
+    
+
+  <meta name="description" content="前言
+免费域名千千万，但不用续期就能一直用下去的并不多，eu.org因为abuse得太厉害已经被SNI干扰作古了，现在最容易薅的永久域名莫过于ClouDNS。注册账号，选择免费DNS zone计划，添加上一个自己心意的域名，删除原有的NS记...">
+  <script src="https://HappyLeslieAlexander.github.io/media/prism.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+  <div class="antialiased">
+    <div class="max-w-5xl mx-auto px-6 md:px-8">
+      <div class="flex justify-between items-center mt-10">
+  <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-900 font-medium md:font-normal leading-none">
+    <a href="https://HappyLeslieAlexander.github.io">Leslie Alexander的博客</a>
+  </h1>
+  <div class="block lg:hidden" id="thumb-menu">
+    <button id="thumb-open" type="button" class="block">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6H22V7H2V6ZM2 12H22V13H2V12ZM22 18H2V19H22V18Z" class="fill-current text-gray-900"></path></svg>
+    </button>
+    <button id="thumb-close" type="button" class="hidden">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4L20 20M20 4L4 20" class="" stroke="#1A202C"></path></svg>
+    </button>
+  </div>
+</div>
+<div id="nav-list" class="lg:block hidden">
+  <div class="w-full block lg:flex lg:justify-between lg:border-b lg:border-gray-400 mt-10 text-gray-700 font-medium lg:text-lg">
+    <div class="lg:flex -mb-px">
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io" class="nav-link">首页</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/aboutme" class="nav-link">关于</a>
+        
+      
+        
+          <a href="https://github.com/HappyLeslieAlexander" class="nav-link" target="_blank">GitHub</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/tags" class="nav-link">标签</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/archives" class="nav-link">归档</a>
+        
+      
+        
+          <a href="https://t.me/Depressed_LeslieAlexander" class="nav-link" target="_blank">Telegram</a>
+        
+      
+        
+          <a href="https://t.me/s/LeslieDiary" class="nav-link" target="_blank">Telegram 频道</a>
+        
+      
+        
+          <a href="https://t.me/LeslieGroup" class="nav-link" target="_blank">Telegram 群组</a>
+        
+      
+        
+          <a href="https://leslie-links.vercel.app/" class="nav-link" target="_blank">友情链接</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/donate" class="nav-link">捐赠</a>
+        
+      
+    </div>
+    <div class="lg:flex">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+      <a href="https://HappyLeslieAlexander.github.io/atom.xml" class="block mt-6 lg:mt-0 lg:ml-8 flex align-center hover:text-gray-900" target="_blank">
+        <div>RSS</div>
+        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="ml-1 -mt-px"><path d="M16.5 13V18.5H6.5V8.5H12" stroke="#4A5568"></path> <path d="M10 15L18.5 6.5" stroke="#4A5568"></path> <path d="M14 6.5H18.5V11" stroke="#4A5568"></path></svg>
+      </a>
+    </div>
+  </div>
+</div>
+      <div class="mb-20 md:flex mt-10 lg:mt-6 md:border-t md:border-gray-400 md:pt-2 lg:border-t-0 lg:pt-0">
+        <div class="w-full md:w-2/3 mt-6">
+          <h1 class="text-4xl">解决免费域名ClouDNS的一些问题</h1>
+          
+            <img class="max-w-full mt-6 rounded-sm" src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudns.png" alt="">
+          
+          <div class="mt-6 lg:mt-10 post-content">
+            <h2 id="前言">前言</h2>
+<p>免费域名千千万，但不用续期就能一直用下去的并不多，eu.org因为abuse得太厉害已经被SNI干扰作古了，现在最容易薅的永久域名莫过于ClouDNS。注册账号，选择免费DNS zone计划，添加上一个自己心意的域名，删除原有的NS记录，添加两个NS记录到Cloudflare的NameServer，即可将这个永久免费二级域名托管到Cloudflare。但是，在使用过程中会出现无法解析、无法颁发SSL/TLS边缘证书、无法启动Cloudflare CDN（不推荐）的问题，今天分享一下前两个问题的解决方案。</p>
+<h2 id="解析">解析</h2>
+<p>ClouDNS的域名实际上不能完全托管到Cloudflare上，最多只能算是个半托管，需要双重解析，实际上就是同时在Cloudflare和ClouDNS里添加解析。我以我的域名leslieproxynodes.dns-dynamic.net为例，添加一条A记录，让test.leslieproxynodes.dns-dynamic.net解析到IPV4地址1.1.1.1：</p>
+<p>先在Cloudflare里添加A记录，将test.leslieproxynodes.dns-dynamic.net解析到IPV4地址1.1.1.1，关掉CDN，保存</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudns01.png" alt="" loading="lazy"></figure>
+<p>再到Cloudns添加一条相同的A记录，保存</p>
+<figure data-type="image" tabindex="2"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudns02.png" alt="" loading="lazy"></figure>
+<p>稍作等待（大约2分钟）</p>
+<p>尝试ping test.leslieproxynodes.dns-dynamic.net，发现已经解析出IP地址1.1.1.1，解析生效，问题解决。</p>
+<figure data-type="image" tabindex="3"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/cloudns03.png" alt="" loading="lazy"></figure>
+<h2 id="颁发ssltls证书">颁发SSL/TLS证书</h2>
+<p>前往Cloudflare边缘证书，发现状态一直是待验证，点开详情，找到TXT记录信息</p>
+<figure data-type="image" tabindex="4"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/cloudns04.png" alt="" loading="lazy"></figure>
+<p>复制下来名称内容，前往Cloudns添加两条TXT记录，填写Cloudflare边缘证书里面信息，保存，等待记录生效（大约30分钟）</p>
+<figure data-type="image" tabindex="5"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/cloudns05.png" alt="" loading="lazy"></figure>
+<p>大概20分钟，也是看到边缘证书变成了有效</p>
+<figure data-type="image" tabindex="6"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/cloudns06.png" alt="" loading="lazy"></figure>
+<h2 id="开启cdn">开启CDN</h2>
+<p>在Cloudflare里添加解析，开启CDN，前往Cloudns添加两条解析，域名一样，但目标改为Cloudflare CDN IPv4和Cloudflare CDN IPv6地址，地址通过Ping来获取</p>
+<h2 id="总结">总结</h2>
+<p>虽然ClouDNS的免费域名永久使用，但是使用起来非常麻烦，因此如果有条件的话仍然建议使用pp.ua、us.kg或者买一个1美元一年的.top域名，实在要用ClouDNS，也可以不托管Cloudflare直接使用Cloudns的NS解析。</p>
+
+          </div>
+          
+            
+              <div class="mt-6">
+                <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'e00b7b0fe8f2446bfcdb',
+    clientSecret: '47c98b216b9a1e3fb82f0c45e697fe05b10cf218',
+    repo: 'HappyLeslieAlexander.github.io',
+    owner: 'HappyLeslieAlexander',
+    admin: ['HappyLeslieAlexander'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+              </div>
+            
+  
+            
+          
+        </div>
+        
+          <div class="w-full md:w-1/3">
+            <div class="mt-6 md:pl-8">
+              <h4 class="text-base font-thin text-gray-700 mb-2">发布时间</h4>
+              <div class="text-lg mb-6">2024-06-25</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">标签</h4>
+              <div class="mb-6">
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/cdn/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">CDN</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/Cloudflare/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">Cloudflare</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/domain/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">domain</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/free/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">free</a>
+                
+              </div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">阅读时间</h4>
+              <div class="text-lg mb-6">3 min read</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">相关阅读</h4>
+              <div class="border-b border-gray-400">
+                
+
+  
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Refresh-JSDELIVR-CDN/" class="text-lg hover:underline my-2 inline-block">刷新cdn.jsdelivr.net缓存内容</a>
+        </div>
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Domain-Fronting-EdgeTunnel/" class="text-lg hover:underline my-2 inline-block">域前置--搭建永不被墙的节点--复活已经被墙的节点</a>
+        </div>
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+
+  
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/PicGo-GitHub-Image-Hosting/" class="text-lg hover:underline my-2 inline-block">使用PicGo+GitHub搭建免费图床</a>
+        </div>
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+              </div>
+            </div>
+          </div>
+        
+      </div>
+      <div class="footer border-gray-400 border-t pt-6 mt-6 sm:mt-8 md:mt-10 mb-20 text-gray-700 text-sm sm:text-base lg:text-lg">
+  本网页使用MarkDown语言进行编写，托管于GitHub Pages。 <br />
+<a href="https://icp.gov.moe/?keyword=20230638" target="_blank"><img style="height:16px;" src="https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230638%E5%8F%B7-ef82a0?labelColor=51c4d3%22%20data-lazy-src=%22https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230317%E5%8F%B7-ef82a0?labelColor=51c4d3" alt="萌ICP备20230638号" data-ll-status="loaded" class="entered loaded"></a> <br />
+<a href="https://guan.ma/hao/2024000123/" title="官码2024000123号"><img src="https://style.wmou.com/images/guanma.png" alt="官码" width="20">官码2024000123号</a> <br />
+本网站使用CloudFlare CDN进行保护和加速。
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudflare.webp" width="80px" height="16px" alt="CloudFlare"> <br />
+</div>
+    </div>
+  </div>
+  <script>
+    Prism.highlightAll()
+  </script>
+</body>
+</html>

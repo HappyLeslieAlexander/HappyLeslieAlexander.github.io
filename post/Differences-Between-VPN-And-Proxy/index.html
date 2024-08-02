@@ -1,0 +1,348 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>VPN和代理的区别 | Leslie Alexander的博客</title>
+<link rel="stylesheet" href="https://HappyLeslieAlexander.github.io/styles/main.css">
+<script src="https://HappyLeslieAlexander.github.io/media/script.js"></script>
+
+    
+
+  <meta name="description" content="前言
+作为一名天朝上国的国民，想要使用Google和Telegram等境外服务需要突破网络审查和封锁，也就是翻墙。大多数人认为翻墙就是使用VPN，其实不然，大多数翻墙人士对VPN和代理之间存在着很大的误解，把它们混为一谈，所以这一期我来出一...">
+  <script src="https://HappyLeslieAlexander.github.io/media/prism.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+</head>
+<body>
+  <div class="antialiased">
+    <div class="max-w-5xl mx-auto px-6 md:px-8">
+      <div class="flex justify-between items-center mt-10">
+  <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-900 font-medium md:font-normal leading-none">
+    <a href="https://HappyLeslieAlexander.github.io">Leslie Alexander的博客</a>
+  </h1>
+  <div class="block lg:hidden" id="thumb-menu">
+    <button id="thumb-open" type="button" class="block">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6H22V7H2V6ZM2 12H22V13H2V12ZM22 18H2V19H22V18Z" class="fill-current text-gray-900"></path></svg>
+    </button>
+    <button id="thumb-close" type="button" class="hidden">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4L20 20M20 4L4 20" class="" stroke="#1A202C"></path></svg>
+    </button>
+  </div>
+</div>
+<div id="nav-list" class="lg:block hidden">
+  <div class="w-full block lg:flex lg:justify-between lg:border-b lg:border-gray-400 mt-10 text-gray-700 font-medium lg:text-lg">
+    <div class="lg:flex -mb-px">
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io" class="nav-link">首页</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/aboutme" class="nav-link">关于</a>
+        
+      
+        
+          <a href="https://github.com/HappyLeslieAlexander" class="nav-link" target="_blank">GitHub</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/tags" class="nav-link">标签</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/archives" class="nav-link">归档</a>
+        
+      
+        
+          <a href="https://t.me/Depressed_LeslieAlexander" class="nav-link" target="_blank">Telegram</a>
+        
+      
+        
+          <a href="https://t.me/s/LeslieDiary" class="nav-link" target="_blank">Telegram 频道</a>
+        
+      
+        
+          <a href="https://t.me/LeslieGroup" class="nav-link" target="_blank">Telegram 群组</a>
+        
+      
+        
+          <a href="https://leslie-links.vercel.app/" class="nav-link" target="_blank">友情链接</a>
+        
+      
+        
+          <a href="https://HappyLeslieAlexander.github.io/post/donate" class="nav-link">捐赠</a>
+        
+      
+    </div>
+    <div class="lg:flex">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+      <a href="https://HappyLeslieAlexander.github.io/atom.xml" class="block mt-6 lg:mt-0 lg:ml-8 flex align-center hover:text-gray-900" target="_blank">
+        <div>RSS</div>
+        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="ml-1 -mt-px"><path d="M16.5 13V18.5H6.5V8.5H12" stroke="#4A5568"></path> <path d="M10 15L18.5 6.5" stroke="#4A5568"></path> <path d="M14 6.5H18.5V11" stroke="#4A5568"></path></svg>
+      </a>
+    </div>
+  </div>
+</div>
+      <div class="mb-20 md:flex mt-10 lg:mt-6 md:border-t md:border-gray-400 md:pt-2 lg:border-t-0 lg:pt-0">
+        <div class="w-full md:w-2/3 mt-6">
+          <h1 class="text-4xl">VPN和代理的区别</h1>
+          
+            <img class="max-w-full mt-6 rounded-sm" src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Differences%20Between%20VPN%20And%20Proxy.png" alt="">
+          
+          <div class="mt-6 lg:mt-10 post-content">
+            <h2 id="前言">前言</h2>
+<p>作为一名天朝上国的国民，想要使用Google和Telegram等境外服务需要突破网络审查和封锁，也就是翻墙。大多数人认为翻墙就是使用VPN，其实不然，大多数翻墙人士对VPN和代理之间存在着很大的误解，把它们混为一谈，所以这一期我来出一篇专门介绍VPN和代理的文章。</p>
+<h2 id="vpnvirtual-private-network">VPN（Virtual Private Network）</h2>
+<p>概括： VPN是一种通过公共网络建立私密连接的技术。它通过加密通信，将用户与目标服务器之间的数据传输置于一个安全的加密隧道中，从而确保数据的隐私性和完整性。</p>
+<p>特点：</p>
+<p>全局网络连接： VPN提供全局性的网络连接，可以涵盖整个设备的互联网流量，使其通过安全通道传输。<br>
+地理限制突破： 用户可以通过连接到不同的服务器，绕过地理位置限制，访问受限内容。<br>
+加密通信： 使用各种加密协议确保数据在传输中得到保护。<br>
+用途：常用于内网穿透、隐藏IP、翻墙</p>
+<p>使用的协议：</p>
+<p>PPTP（Point-to-Point Tunneling Protocol）、L2TP/IPsec（Layer 2 Tunneling Protocol over IPsec）、OpenVPN、IKEv2（Internet Key Exchange version 2）、SSTP（Secure Socket Tunneling Protocol）、WireGuard等。</p>
+<h2 id="代理proxy">代理（Proxy）</h2>
+<p>特点：</p>
+<p>加速访问： 代理服务器通过缓存和本地数据传输，提高用户访问速度。<br>
+访问控制： 可通过代理设置访问控制，限制或允许特定请求。<br>
+简便配置： 代理通常配置较为简单，适用于特定应用或服务的连接。<br>
+隐藏真实IP： 用户请求通过代理服务器，隐藏了用户的真实IP地址。<br>
+用途：常用于隐藏IP、翻墙</p>
+<p>使用的协议：</p>
+<p>HTTP、HTTPS（HTTP Over TLS）、SOCKS（SOCKS4、SOCKS5）等。<br>
+分析<br>
+传统定义上的VPN需要满足两个条件：数据加密、使用公有协议（上文列举出来的）</p>
+<p>传统意义上的代理只需要满足一个条件：使用公有协议（上文列举出来的），而对加不加密没有特别的要求，可以加密可以不加密，加密就用TLS。也以设置用户名和密码等认证信息（认证不等于加密，认证成功后你传输的数据依然是明文）</p>
+<p>我们目前所使用的翻墙工具，无外乎就分为三种类型，一类是某某加速器和某某VPN，这类属于传统意义上的VPN，它们使用的协议也是传统的VPN的协议，同时也进行了加密，所以它们毫无争议地被定义为VPN</p>
+<p>一类是“机场”节点，需要搭配Clash或者V2Ray等代理工具使用，这些节点也进行了加密，但是却既没有使用VPN的公有协议，也没有使用代理的共有协议，这些节点使用的是专门为翻墙而生的协议，常见的有Shadowsocks、VMess、VLESS、Trojan等协议，这些协议也是开源的。因此我们很难定义节点到底属于VPN还是属于代理。</p>
+<p>那么这样写文章就无限循环了</p>
+<h2 id="怎么可能正文开始">怎么可能，正文开始</h2>
+<p>以下内容涉及专业知识，小白可能看不懂</p>
+<p>我们提到VPN还有一个比较大的用途--内网穿透，比如电脑A、B在同一个局域网，电脑A运行了VPN服务器，电脑B运行了SAMBA文件共享服务，电脑C和电脑A、B不在一个局域网，但是我们可以让电脑C连接上电脑A运行的VPN，然后获得一个内网地址，这样就可以穿透NAT访问电脑B的SAMBA共享的文件了。而代理只会转发你的流量，不能够让你访问到VPN运行的内网。</p>
+<p>此外，VPN包含完整的三层数据包（网络层、传输层、会议层-会话层），例如你访问谷歌，你的VPN客户端生成一份请求谷歌的完整数据，但并没有发给谷歌，而是发给了VPN服务器。代理则不是这样，还是假如你访问谷歌，你的代理客户端发送的数据为请求代理服务器访问谷歌，并没有生成请求谷歌的完整数据，请求谷歌的完整数据由代理服务器生成和发送。这是VPN和代理的一个显著区别。</p>
+<figure data-type="image" tabindex="1"><img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/OSI.png" alt="" loading="lazy"></figure>
+<p>** 总而言之，VPN相当于把VPN服务器的网络拿了过来用，而代理服务器只是帮你转发数据 **</p>
+<p>结论<br>
+如Cloudflare提供的WARP、ProtonVPN、老王VPN等程序提供的是VPN，而我们所有的所有机场节点都是代理</p>
+<p>Tips：这期内容干货满满，网上至今还没有对于VPN和代理的明确区分，希望这期文章能帮到更多小白，不要再把VPN和代理混为一谈了</p>
+
+          </div>
+          
+            
+              <div class="mt-6">
+                <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'e00b7b0fe8f2446bfcdb',
+    clientSecret: '47c98b216b9a1e3fb82f0c45e697fe05b10cf218',
+    repo: 'HappyLeslieAlexander.github.io',
+    owner: 'HappyLeslieAlexander',
+    admin: ['HappyLeslieAlexander'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+              </div>
+            
+  
+            
+          
+        </div>
+        
+          <div class="w-full md:w-1/3">
+            <div class="mt-6 md:pl-8">
+              <h4 class="text-base font-thin text-gray-700 mb-2">发布时间</h4>
+              <div class="text-lg mb-6">2024-06-16</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">标签</h4>
+              <div class="mb-6">
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/Proxy/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">Proxy</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/VPN/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">VPN</a>
+                
+                  <a href="https://HappyLeslieAlexander.github.io/tag/Security/" class="py-1 px-4 border-gray-300 border text-sm inline-block text-gray-700 hover:text-gray-900 rounded mr-2 mb-2">Security</a>
+                
+              </div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">阅读时间</h4>
+              <div class="text-lg mb-6">5 min read</div>
+              <h4 class="text-base font-thin text-gray-700 mb-2">相关阅读</h4>
+              <div class="border-b border-gray-400">
+                
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Domain-Fronting-EdgeTunnel/" class="text-lg hover:underline my-2 inline-block">域前置--搭建永不被墙的节点--复活已经被墙的节点</a>
+        </div>
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Tor-Proxy/" class="text-lg hover:underline my-2 inline-block">洋葱路由（Tor）的高级用法</a>
+        </div>
+      
+    
+      
+    
+      
+        
+        <div class="border-t border-gray-400 py-6">
+          <a href="https://HappyLeslieAlexander.github.io/post/Tor-Proxy/" class="text-lg hover:underline my-2 inline-block">洋葱路由（Tor）的高级用法</a>
+        </div>
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+              </div>
+            </div>
+          </div>
+        
+      </div>
+      <div class="footer border-gray-400 border-t pt-6 mt-6 sm:mt-8 md:mt-10 mb-20 text-gray-700 text-sm sm:text-base lg:text-lg">
+  本网页使用MarkDown语言进行编写，托管于GitHub Pages。 <br />
+<a href="https://icp.gov.moe/?keyword=20230638" target="_blank"><img style="height:16px;" src="https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230638%E5%8F%B7-ef82a0?labelColor=51c4d3%22%20data-lazy-src=%22https://img.shields.io/badge/%E8%90%8CICP%E5%A4%87-20230317%E5%8F%B7-ef82a0?labelColor=51c4d3" alt="萌ICP备20230638号" data-ll-status="loaded" class="entered loaded"></a> <br />
+<a href="https://guan.ma/hao/2024000123/" title="官码2024000123号"><img src="https://style.wmou.com/images/guanma.png" alt="官码" width="20">官码2024000123号</a> <br />
+本网站使用CloudFlare CDN进行保护和加速。
+<img src="https://cdn.jsdelivr.net/gh/HappyLeslieAlexander/PicGo01/Cloudflare.webp" width="80px" height="16px" alt="CloudFlare"> <br />
+</div>
+    </div>
+  </div>
+  <script>
+    Prism.highlightAll()
+  </script>
+</body>
+</html>
